@@ -31,6 +31,10 @@
                     boxShadow: {
                         'card': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                         'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                    },
+                    animation: {
+                        'bounce-slow': 'bounce 3s infinite',
+                        'spin-slow': 'spin 8s linear infinite',
                     }
                 }
             }
@@ -88,16 +92,23 @@
 
     <!-- Header -->
     <header class="ao-gradient text-white shadow-lg sticky top-0 z-50">
-        <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <i class="fas fa-tennis-ball text-aoYellow text-2xl animate-spin-slow"></i>
-                <div>
-                    <h1 class="text-xl md:text-2xl font-bold tracking-tight">AO 2026 CONTEST</h1>
-                    <p class="text-xs text-blue-200">Official Prediction Game</p>
+        <div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-4">
+                <!-- AO Official Logo (External URL) -->
+                <!-- Questo codice cerca il file "Logo.png" nella stessa cartella -->
+                <div class="bg-white rounded-full w-12 h-12 shadow-md p-1 flex items-center justify-center overflow-hidden">
+                    <img src="Logo.png" 
+                         onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Australian_Open_Logo.svg/1024px-Australian_Open_Logo.svg.png'; this.onerror=null;"
+                         alt="AO Logo" 
+                         class="w-full h-full object-contain">
+                </div>
+                <div class="border-l border-white/30 pl-4 hidden sm:block">
+                    <h1 class="text-lg md:text-xl font-bold tracking-tight leading-none font-sans">AO CONTEST 2026</h1>
+                    <p class="text-[10px] text-blue-200 uppercase tracking-widest">Official Prediction Game</p>
                 </div>
             </div>
-            <div class="text-sm font-semibold bg-white/10 px-3 py-1 rounded-full border border-white/20 backdrop-blur-sm">
-                <i class="far fa-user mr-1"></i> <span id="currentUserDisplay">Ospite</span>
+            <div class="text-sm font-semibold bg-white/10 px-3 py-1 rounded-full border border-white/20 backdrop-blur-sm flex items-center gap-2">
+                <i class="far fa-user"></i> <span id="currentUserDisplay">Ospite</span>
             </div>
         </div>
     </header>
@@ -105,8 +116,8 @@
     <!-- Main Content -->
     <main class="flex-grow container max-w-4xl mx-auto px-2 py-6">
         
-        <!-- Navigation Tabs (Public: Only Play and Rules) -->
-        <div class="flex justify-center mb-8 bg-white rounded-xl shadow-card p-1 sticky top-20 z-40 mx-2 md:mx-0">
+        <!-- Navigation Tabs -->
+        <div class="flex justify-center mb-8 bg-white rounded-xl shadow-card p-1 sticky top-20 z-40 mx-2 md:mx-0 transition-all">
             <button onclick="switchTab('play')" id="btn-play" class="flex-1 py-3 rounded-lg text-sm font-bold transition-all duration-200 bg-aoBlue text-white shadow-sm">
                 <i class="fas fa-gamepad mr-2"></i> GIOCA
             </button>
@@ -119,38 +130,76 @@
         <div id="tab-play" class="space-y-6">
             
             <!-- Registration / Status -->
-            <div id="registrationPanel" class="bg-white rounded-xl shadow-card p-8 border-t-4 border-aoYellow max-w-md mx-auto text-center">
-                <div class="mb-4 text-aoBlue text-4xl"><i class="fas fa-user-circle"></i></div>
-                <h2 class="text-2xl font-bold text-aoDarkBlue mb-2">Benvenuto al Contest!</h2>
-                <p class="text-gray-600 mb-6">Inserisci il tuo nome completo per iniziare a compilare il tabellone.</p>
-                <div class="flex flex-col gap-3">
-                    <input type="text" id="playerNameInput" placeholder="Nome e Cognome" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-aoBlue text-center font-medium">
-                    <button onclick="registerPlayer()" class="w-full bg-aoBlue hover:bg-aoDarkBlue text-white font-bold py-3 px-6 rounded-lg transition shadow-md hover:shadow-lg">INIZIA A GIOCARE</button>
+            <div id="registrationPanel" class="bg-white rounded-2xl shadow-2xl p-10 border-t-8 border-aoBlue max-w-md mx-auto text-center transform transition-all hover:scale-[1.01]">
+                <div class="flex justify-center mb-8">
+                     <!-- AO Logo Large -->
+                     <!-- Questo codice cerca il file "Logo.png" nella stessa cartella -->
+                    <img src="Logo.png" 
+                         onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Australian_Open_Logo.svg/1024px-Australian_Open_Logo.svg.png'; this.onerror=null;"
+                         alt="Australian Open Logo" 
+                         class="w-48 h-auto filter drop-shadow-md">
                 </div>
+                
+                <h2 class="text-3xl font-extrabold text-aoDarkBlue mb-3">Sei pronto alla sfida?</h2>
+                <p class="text-gray-500 mb-8 text-sm leading-relaxed">Entra nel campo centrale e fai le tue previsioni per il torneo più caldo dell'anno.</p>
+                
+                <div class="flex flex-col gap-4">
+                    <!-- Name Input Removed as requested, just a hidden ID generator if needed, or simple button -->
+                     <!-- Per mantenere un minimo di identità usiamo un input generico 'Nickname' opzionale, 
+                          ma se vuoi toglierlo del tutto, il codice JS sotto genererà un nome a caso -->
+                    <input type="text" id="playerNameInput" placeholder="Scegli un Nickname (opzionale)" class="w-full border-2 border-gray-200 rounded-xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-aoBlue focus:border-transparent text-center font-bold text-lg text-gray-700 bg-gray-50">
+                    
+                    <button onclick="registerPlayer()" class="group w-full bg-aoGradient hover:bg-aoDarkBlue text-white font-bold py-4 px-6 rounded-xl transition-all shadow-lg hover:shadow-xl transform active:scale-95 flex items-center justify-center gap-3 bg-aoBlue">
+                        <span>INIZIA A GIOCARE</span>
+                        <!-- Tennis Ball Icon and Racket -->
+                        <div class="relative w-8 h-8">
+                             <!-- Custom SVG Tennis Racket -->
+                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-9 h-9 text-white absolute -top-1 left-0 transform -rotate-12">
+                                <path d="M14.5 17.5L12 22l-2.5-4.5"/>
+                                <ellipse cx="12" cy="9" rx="6" ry="7"/>
+                                <path d="M12 2v14"/>
+                                <path d="M6.5 9h11"/>
+                                <path d="M8 5l8 8"/>
+                                <path d="M8 13L16 5"/>
+                             </svg>
+                             <!-- Ball -->
+                             <i class="fas fa-circle text-aoYellow text-[10px] absolute bottom-0 right-0 animate-bounce shadow-sm rounded-full border border-yellow-600"></i>
+                        </div>
+                    </button>
+                </div>
+                <p class="mt-6 text-xs text-gray-400">Cliccando inizi il tuo percorso nel tabellone.</p>
             </div>
 
             <!-- Game Interface (Hidden until registered) -->
             <div id="gameInterface" class="hidden animate-fade-in">
                 
                 <!-- Category Selector -->
-                <div class="flex justify-center gap-4 mb-6">
-                    <button onclick="setCategory('M')" id="btn-cat-M" class="group relative px-8 py-3 rounded-full font-bold bg-aoBlue text-white shadow-lg transform transition-all hover:-translate-y-0.5">
-                        <span class="mr-2">ATP</span> UOMINI
-                        <div class="absolute -bottom-1 left-1/2 w-1 h-1 bg-aoYellow rounded-full transform -translate-x-1/2 opacity-0 group-hover:opacity-100"></div>
-                    </button>
-                    <button onclick="setCategory('W')" id="btn-cat-W" class="group relative px-8 py-3 rounded-full font-bold bg-white text-gray-500 shadow border border-gray-200 hover:border-aoBlue hover:text-aoBlue transition-all">
-                        <span class="mr-2">WTA</span> DONNE
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-6">
+                    <div class="flex gap-2 p-1 bg-white rounded-full shadow-sm border border-gray-100">
+                        <button onclick="setCategory('M')" id="btn-cat-M" class="px-6 py-2 rounded-full font-bold text-sm transition-all duration-300 transform">
+                            <i class="fas fa-mars mr-2"></i> UOMINI
+                        </button>
+                        <button onclick="setCategory('W')" id="btn-cat-W" class="px-6 py-2 rounded-full font-bold text-sm transition-all duration-300 transform">
+                            <i class="fas fa-venus mr-2"></i> DONNE
+                        </button>
+                    </div>
+
+                    <!-- Auto Fill Button (User) -->
+                    <button onclick="autoFillBracket()" class="text-xs bg-purple-50 text-purple-600 hover:bg-purple-100 hover:text-purple-800 px-4 py-2 rounded-full font-bold flex items-center gap-2 transition border border-purple-100 shadow-sm" title="Compila automaticamente il resto del tabellone">
+                        <i class="fas fa-magic"></i> <span class="hidden sm:inline">Compilazione Rapida</span>
                     </button>
                 </div>
 
                 <!-- Round Progress -->
                 <div class="bg-white p-4 rounded-xl shadow-card mb-6 flex items-center justify-between overflow-x-auto border border-gray-100">
-                    <div class="flex gap-3 text-xs font-bold whitespace-nowrap" id="roundIndicator">
+                    <div class="flex gap-3 text-xs font-bold whitespace-nowrap overflow-x-auto pb-1" id="roundIndicator">
                         <!-- Populated by JS -->
                     </div>
-                    <div class="flex items-center gap-2 ml-4">
-                        <div class="h-2 w-24 bg-gray-100 rounded-full overflow-hidden">
-                            <div id="progressBar" class="h-full bg-aoGreen transition-all duration-500" style="width: 0%"></div>
+                    <div class="flex items-center gap-2 ml-4 min-w-[100px]">
+                        <div class="h-2 flex-grow bg-gray-100 rounded-full overflow-hidden">
+                            <div id="progressBar" class="h-full bg-aoGreen transition-all duration-500 relative" style="width: 0%">
+                                <div class="absolute inset-0 bg-white/20 w-full h-full animate-pulse"></div>
+                            </div>
                         </div>
                         <div class="text-xs font-bold text-aoGreen" id="progressText">0%</div>
                     </div>
@@ -162,19 +211,19 @@
                 </div>
 
                 <!-- Navigation Buttons -->
-                <div class="flex justify-between items-center mt-8 bg-white p-4 rounded-xl shadow-card sticky bottom-4 z-30 border border-gray-100">
-                    <button id="prevRoundBtn" onclick="changeRound(-1)" class="hidden px-5 py-2.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg font-bold transition flex items-center gap-2">
-                        <i class="fas fa-arrow-left"></i> Indietro
+                <div class="flex justify-between items-center mt-8 bg-white p-4 rounded-xl shadow-card sticky bottom-4 z-30 border border-gray-100 bg-opacity-95 backdrop-blur">
+                    <button id="prevRoundBtn" onclick="changeRound(-1)" class="hidden px-5 py-3 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-xl font-bold transition flex items-center gap-2 text-sm">
+                        <i class="fas fa-arrow-left"></i> <span class="hidden sm:inline">Indietro</span>
                     </button>
                     
-                    <div class="text-xs text-gray-400 font-medium hidden md:block">
-                        Fai tap sul giocatore per selezionarlo
+                    <div class="text-xs text-gray-400 font-medium hidden md:block italic">
+                        Seleziona i vincitori per avanzare
                     </div>
 
-                    <button id="nextRoundBtn" onclick="nextRound()" class="ml-auto px-6 py-2.5 bg-aoYellow text-aoDarkBlue hover:bg-yellow-400 rounded-lg font-bold shadow-md hover:shadow-lg transition flex items-center gap-2">
+                    <button id="nextRoundBtn" onclick="nextRound()" class="ml-auto px-8 py-3 bg-aoYellow text-aoDarkBlue hover:bg-yellow-400 rounded-xl font-bold shadow-md hover:shadow-lg transition flex items-center gap-3 text-sm transform hover:-translate-y-0.5">
                         Prossimo Turno <i class="fas fa-arrow-right"></i>
                     </button>
-                    <button id="finishBtn" onclick="finishPrediction()" class="hidden ml-auto px-6 py-2.5 bg-aoGreen text-white hover:bg-green-600 rounded-lg font-bold shadow-md hover:shadow-lg transition flex items-center gap-2">
+                    <button id="finishBtn" onclick="finishPrediction()" class="hidden ml-auto px-8 py-3 bg-aoGreen text-white hover:bg-green-600 rounded-xl font-bold shadow-md hover:shadow-lg transition flex items-center gap-3 text-sm transform hover:-translate-y-0.5">
                         <i class="fas fa-check-circle"></i> CONCLUDI
                     </button>
                 </div>
@@ -182,17 +231,17 @@
 
             <!-- Results & Export (Hidden until finished) -->
             <div id="exportPanel" class="hidden bg-white rounded-xl shadow-2xl p-8 text-center max-w-2xl mx-auto mt-10">
-                <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <i class="fas fa-check text-4xl text-aoGreen"></i>
+                <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce-slow">
+                    <i class="fas fa-trophy text-5xl text-aoGreen"></i>
                 </div>
-                <h2 class="text-3xl font-bold text-gray-800 mb-2">Ottimo Lavoro!</h2>
-                <p class="text-gray-600 mb-8">Hai completato tutte le previsioni. Invia il codice all'Admin.</p>
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">Tabellone Completato!</h2>
+                <p class="text-gray-600 mb-8">Le tue scelte sono state salvate. Invia il codice all'Admin per entrare in classifica.</p>
                 
                 <div class="bg-gray-50 border border-gray-200 p-6 rounded-xl mb-6 text-left relative group">
                     <label class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Codice di Verifica</label>
                     <textarea id="exportCodeText" readonly class="w-full h-24 bg-white border border-gray-300 p-3 text-xs font-mono rounded-lg resize-none focus:ring-2 focus:ring-aoBlue focus:border-transparent text-gray-600" onclick="this.select()"></textarea>
                     
-                    <button onclick="copyCode()" class="mt-3 w-full bg-aoDarkBlue hover:bg-aoBlue text-white py-2.5 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 shadow-sm">
+                    <button onclick="copyCode()" class="mt-3 w-full bg-aoDarkBlue hover:bg-aoBlue text-white py-3 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 shadow-sm">
                         <i class="far fa-copy"></i> Copia Codice per WhatsApp
                     </button>
                 </div>
@@ -214,7 +263,7 @@
             <div class="bg-white rounded-xl shadow-card p-8 space-y-6">
                 <div class="flex items-center gap-4 border-b pb-4">
                     <div class="bg-aoYellow p-3 rounded-full text-aoDarkBlue"><i class="fas fa-gavel text-xl"></i></div>
-                    <h2 class="text-2xl font-bold text-aoDarkBlue">Regolamento</h2>
+                    <h2 class="text-2xl font-bold text-aoDarkBlue">Regolamento Ufficiale</h2>
                 </div>
                 
                 <div class="grid md:grid-cols-2 gap-8">
@@ -261,15 +310,18 @@
                         <div class="bg-green-50 border border-green-200 p-4 rounded-xl text-sm text-green-800">
                             <div class="flex items-start gap-3">
                                 <i class="fas fa-star mt-1 text-green-600"></i>
-                                <p>Se indovini sia il <strong>Vincitore</strong> che il <strong>Numero Esatto di Set</strong> (3/4/5 per uomini, 2/3 per donne), ricevi un bonus extra.</p>
+                                <p>Se indovini sia il <strong>Vincitore</strong> che il <strong>Numero Esatto di Set</strong> (3, 4 o 5 per uomini; 2 o 3 per donne), ricevi un bonus extra.</p>
                             </div>
                             <div class="mt-3 text-right font-bold text-xl">+10 Punti</div>
                         </div>
                         
-                        <h3 class="font-bold text-lg text-gray-700 mt-6 mb-3">Modalità di Gioco</h3>
-                        <p class="text-sm text-gray-600 leading-relaxed">
-                            Il gioco funziona completamente offline. Una volta compilato il tabellone, verrà generato un codice criptato. Invia questo codice all'amministratore per essere inserito nella classifica ufficiale.
+                        <h3 class="font-bold text-lg text-gray-700 mt-6 mb-3">Come Funziona</h3>
+                        <p class="text-sm text-gray-600 leading-relaxed mb-4">
+                            Il gioco è completamente offline. Compila il tabellone sul tuo dispositivo. Al termine, verrà generato un "Codice Giocatore" univoco.
                         </p>
+                        <div class="p-3 bg-blue-50 rounded-lg text-xs text-blue-800">
+                            <strong>Nota Bene:</strong> Invia il codice all'amministratore del gruppo per essere inserito nella classifica generale.
+                        </div>
                     </div>
                 </div>
             </div>
@@ -323,12 +375,18 @@
                         <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200 mb-6 flex gap-3">
                             <i class="fas fa-info-circle text-yellow-600 mt-1"></i>
                             <div class="text-sm text-yellow-800">
-                                <strong>Modalità Ufficiale:</strong> Simula il torneo inserendo i risultati reali man mano che avvengono. Salva alla fine per aggiornare il database dei punteggi corretti.
+                                <strong>Modalità Ufficiale:</strong> Simula il torneo inserendo i risultati reali man mano che avvengono.
                             </div>
                         </div>
-                        <button onclick="startAdminOfficialEntry()" class="w-full bg-aoDarkBlue hover:bg-gray-900 text-white py-4 rounded-xl font-bold shadow-lg transition flex items-center justify-center gap-3">
-                            <i class="fas fa-edit"></i> Apri Editor Risultati Ufficiali
-                        </button>
+                        <div class="grid gap-4">
+                            <button onclick="startAdminOfficialEntry()" class="w-full bg-aoDarkBlue hover:bg-gray-900 text-white py-4 rounded-xl font-bold shadow-lg transition flex items-center justify-center gap-3">
+                                <i class="fas fa-edit"></i> Apri Editor Manuale (Per aggiornamenti live)
+                            </button>
+                            
+                            <button onclick="adminSimulateTournament()" class="w-full bg-purple-600 hover:bg-purple-800 text-white py-4 rounded-xl font-bold shadow-lg transition flex items-center justify-center gap-3">
+                                <i class="fas fa-bolt"></i> ⚡ Simula Torneo Completo (Test Immediato)
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Sub-Tab: Players -->
@@ -358,8 +416,7 @@
 
     <!-- Footer -->
     <footer class="bg-white border-t border-gray-200 py-8 text-center text-xs text-gray-400 mt-auto relative">
-        <p class="mb-1">&copy; 2026 AO Contest App. Unofficial fan game.</p>
-        <p>Created for tennis lovers.</p>
+        <p class="mb-1">&copy; 2026 AO Contest App. Fan made game.</p>
         <button onclick="promptAdminPassword()" class="mt-4 text-gray-300 hover:text-aoBlue transition p-2">
             <i class="fas fa-lock"></i> Admin Access
         </button>
@@ -586,10 +643,10 @@
         let participants = JSON.parse(localStorage.getItem('ao26_participants')) || [];
         let currentBracket = [];
         let isAdminMode = false;
+        let isAutoFilled = false; // Flag for auto-fill
 
         // --- INIT ---
         function init() {
-            // Animation for modal appearance
             const modal = document.getElementById('setSelectionModal');
             modal.addEventListener('transitionend', (e) => {
                 if(modal.classList.contains('opacity-0') && !modal.classList.contains('hidden')) {
@@ -602,10 +659,8 @@
         // --- NAVIGATION ---
         function switchTab(tab) {
             document.getElementById('tab-play').classList.add('hidden');
-            // Ranking tab is now removed from public view
             document.getElementById('tab-rules').classList.add('hidden');
             
-            // Reset styles
             ['play', 'rules'].forEach(t => {
                 const btn = document.getElementById(`btn-${t}`);
                 if(btn) btn.className = "flex-1 py-3 rounded-lg text-sm font-bold text-gray-500 hover:bg-gray-50 transition-all duration-200";
@@ -615,7 +670,6 @@
             const activeBtn = document.getElementById(`btn-${tab}`);
             if(activeBtn) activeBtn.className = "flex-1 py-3 rounded-lg text-sm font-bold bg-aoBlue text-white shadow-sm transition-all duration-200 transform scale-105";
             
-            // Re-render round if in play tab
             if(tab === 'play' && currentUser) {
                 renderRound();
             }
@@ -624,8 +678,15 @@
         // --- GAME LOGIC ---
 
         function registerPlayer() {
-            const name = document.getElementById('playerNameInput').value.trim();
-            if (!name) return alert("Inserisci un nome!");
+            const nameInput = document.getElementById('playerNameInput');
+            let name = nameInput.value.trim();
+            
+            // If empty, generate a random fun tennis name
+            if (!name) {
+                const adjs = ["Veloce", "Potente", "Ace", "Spin", "Smash", "Volley", "Net"];
+                const nouns = ["Player", "Racket", "Ball", "Winner", "Champ", "Pro"];
+                name = adjs[Math.floor(Math.random()*adjs.length)] + nouns[Math.floor(Math.random()*nouns.length)] + Math.floor(Math.random()*100);
+            }
             
             currentUser = name;
             document.getElementById('currentUserDisplay').innerText = name;
@@ -633,6 +694,7 @@
             document.getElementById('gameInterface').classList.remove('hidden');
             
             userPicks = { M: {}, W: {} };
+            isAutoFilled = false;
             startTournament('M');
         }
 
@@ -640,16 +702,15 @@
             currentCategory = cat;
             currentRoundIndex = 0;
             
-            // Visual Update
             const btnM = document.getElementById('btn-cat-M');
             const btnW = document.getElementById('btn-cat-W');
             
             if(cat === 'M') {
-                btnM.className = "group relative px-8 py-3 rounded-full font-bold bg-aoBlue text-white shadow-lg transform scale-105 transition-all";
-                btnW.className = "group relative px-8 py-3 rounded-full font-bold bg-white text-gray-500 shadow border border-gray-200 hover:border-aoBlue hover:text-aoBlue transition-all";
+                btnM.className = "group relative px-6 py-2 rounded-full font-bold bg-aoBlue text-white shadow-lg transform scale-105 transition-all";
+                btnW.className = "group relative px-6 py-2 rounded-full font-bold bg-white text-gray-500 shadow border border-gray-200 hover:border-aoBlue hover:text-aoBlue transition-all";
             } else {
-                btnM.className = "group relative px-8 py-3 rounded-full font-bold bg-white text-gray-500 shadow border border-gray-200 hover:border-aoBlue hover:text-aoBlue transition-all";
-                btnW.className = "group relative px-8 py-3 rounded-full font-bold bg-aoBlue text-white shadow-lg transform scale-105 transition-all";
+                btnM.className = "group relative px-6 py-2 rounded-full font-bold bg-white text-gray-500 shadow border border-gray-200 hover:border-aoBlue hover:text-aoBlue transition-all";
+                btnW.className = "group relative px-6 py-2 rounded-full font-bold bg-aoBlue text-white shadow-lg transform scale-105 transition-all";
             }
 
             renderRound();
@@ -663,6 +724,113 @@
             return (currentCategory === 'M' ? ROUNDS_M : ROUNDS_W)[index];
         }
 
+        // AUTO FILL LOGIC FOR USER
+        function autoFillBracket() {
+            if(!confirm("Vuoi compilare automaticamente il resto del torneo?\n\nIl sistema sceglierà i vincitori basandosi parzialmente sulle teste di serie, ma il risultato sarà marchiato come 'Auto'.")) return;
+            isAutoFilled = true;
+            performAutoFillForObject(userPicks);
+            
+            // UI Update
+            const rounds = currentCategory === 'M' ? ROUNDS_M : ROUNDS_W;
+            currentRoundIndex = rounds.length - 2; 
+            renderRound();
+            alert("Compilazione completata! Controlla le scelte e clicca Concludi.");
+        }
+
+        // ADMIN AUTO FILL LOGIC
+        function adminSimulateTournament() {
+            if(!confirm("Questo genererà RISULTATI UFFICIALI simulati per l'intero torneo, sovrascrivendo eventuali dati esistenti.\n\nProcedere?")) return;
+            
+            // Create a temporary object to hold simulation
+            let simPicks = { M: {}, W: {} };
+            
+            // Need to set 'currentCategory' context for the helper, or pass it
+            // Simple approach: Run helper twice
+            
+            // Simulate Men
+            let oldCat = currentCategory;
+            let oldIdx = currentRoundIndex;
+            
+            // Fill Men
+            currentCategory = 'M';
+            currentRoundIndex = 0;
+            performAutoFillForObject(simPicks, true); // true = complete full tournament
+            
+            // Fill Women
+            currentCategory = 'W';
+            currentRoundIndex = 0;
+            performAutoFillForObject(simPicks, true);
+            
+            // Restore state
+            currentCategory = oldCat;
+            currentRoundIndex = oldIdx;
+            
+            officialResults = simPicks;
+            localStorage.setItem('ao26_official', JSON.stringify(officialResults));
+            
+            alert("Torneo Ufficiale Simulato con Successo!\nOra puoi caricare i codici dei partecipanti e calcolare i punteggi.");
+            
+            // Reload ranking to reflect new correct answers
+            loadRanking();
+            updateAdminPlayerList();
+        }
+
+        function performAutoFillForObject(targetPicks, fullTournament = false) {
+             // If fullTournament is true, we loop M and W fully. 
+             // If false, we just fill the 'currentCategory' from 'currentRoundIndex' onwards (User mode)
+             
+             const cats = fullTournament ? ['M', 'W'] : [currentCategory];
+             
+             cats.forEach(cat => {
+                 const rounds = cat === 'M' ? ROUNDS_M : ROUNDS_W;
+                 const startR = fullTournament ? 0 : currentRoundIndex;
+                 
+                 for(let rIdx = startR; rIdx < rounds.length; rIdx++) {
+                    const rName = rounds[rIdx];
+                    let matches = [];
+                    
+                    if(rIdx === 0) {
+                         const source = cat === 'M' ? pairsMen : pairsWomen;
+                         matches = source.map((pair, idx) => ({
+                            p1: pair[0], p2: pair[1],
+                            winner: null, sets: null
+                        }));
+                    } else {
+                        const prevR = rounds[rIdx-1];
+                        const prevPicks = targetPicks[cat][prevR];
+                        for (let i = 0; i < prevPicks.length; i += 2) {
+                            matches.push({
+                                p1: prevPicks[i].winner,
+                                p2: prevPicks[i+1] ? prevPicks[i+1].winner : {n: 'BYE', c: ''},
+                                winner: null, sets: null
+                            });
+                        }
+                    }
+
+                    // Decide winners
+                    matches.forEach(m => {
+                        let p1WinProb = 0.5;
+                        const s1 = m.p1.s || 999;
+                        const s2 = m.p2.s || 999;
+
+                        if (s1 < s2) { 
+                            p1WinProb = (s1 !== 999 && s2 === 999) ? 0.8 : 0.65;
+                        } else if (s2 < s1) {
+                             p1WinProb = (s2 !== 999 && s1 === 999) ? 0.2 : 0.35;
+                        }
+
+                        const winnerIsP1 = Math.random() < p1WinProb;
+                        m.winner = winnerIsP1 ? m.p1 : m.p2;
+                        
+                        const possibleSets = cat === 'M' ? [3, 4, 5] : [2, 3];
+                        m.sets = possibleSets[Math.floor(Math.random() * possibleSets.length)];
+                    });
+
+                    targetPicks[cat][rName] = matches;
+                 }
+             });
+        }
+
         function renderRound() {
             const container = document.getElementById('matchesContainer');
             container.innerHTML = '';
@@ -670,7 +838,6 @@
             const roundName = getRoundName(currentRoundIndex);
             const rounds = currentCategory === 'M' ? ROUNDS_M : ROUNDS_W;
             
-            // Indicators
             document.getElementById('roundIndicator').innerHTML = rounds.map((r, i) => 
                 `<span class="${i === currentRoundIndex ? 'text-aoBlue bg-blue-100 px-3 py-1 rounded-full shadow-sm' : 'text-gray-300'} transition-all">${r}</span>`
             ).join('');
@@ -682,14 +849,11 @@
             let matches = [];
 
             if (currentRoundIndex === 0) {
-                // R128 - Use Objects
                 const source = currentCategory === 'M' ? pairsMen : pairsWomen;
                 const existingPicks = userPicks[currentCategory][roundName];
-                
                 matches = source.map((pair, idx) => ({
                     id: `${currentCategory}_${roundName}_${idx}`,
-                    p1: pair[0],
-                    p2: pair[1],
+                    p1: pair[0], p2: pair[1],
                     winner: existingPicks ? existingPicks[idx].winner : null,
                     sets: existingPicks ? existingPicks[idx].sets : null
                 }));
@@ -701,13 +865,11 @@
                     container.innerHTML = '<div class="col-span-2 text-center p-10 text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-300">Completa il turno precedente per sbloccare questo livello.</div>';
                     return;
                 }
-
                 const existingPicks = userPicks[currentCategory][roundName];
-                
                 for (let i = 0; i < prevPicks.length; i += 2) {
                     matches.push({
                         id: `${currentCategory}_${roundName}_${i/2}`,
-                        p1: prevPicks[i].winner, // Object {n, c, s}
+                        p1: prevPicks[i].winner, 
                         p2: prevPicks[i+1] ? prevPicks[i+1].winner : {n: 'BYE', c: ''},
                         winner: existingPicks ? existingPicks[i/2].winner : null,
                         sets: existingPicks ? existingPicks[i/2].sets : null
@@ -717,9 +879,7 @@
             
             currentBracket = matches;
             
-            // Render Cards
             matches.forEach((match, idx) => {
-                // Checks based on Name string equality
                 const isP1Selected = match.winner && match.winner.n === match.p1.n;
                 const isP2Selected = match.winner && match.winner.n === match.p2.n;
                 
@@ -743,7 +903,6 @@
                 const card = document.createElement('div');
                 card.className = "match-card bg-white rounded-xl shadow-card hover:shadow-card-hover p-2 border border-gray-100";
                 
-                // Pass indices safely
                 card.innerHTML = `
                     <div class="flex flex-col gap-1">
                         ${renderPlayer(match.p1, isP1Selected, `openSetModal(${idx}, 'p1')`)}
@@ -756,10 +915,9 @@
                 container.appendChild(card);
             });
 
-            // Button visibility
             document.getElementById('prevRoundBtn').classList.toggle('hidden', currentRoundIndex === 0);
             
-            if (currentRoundIndex === rounds.length - 2) { // Final Round
+            if (currentRoundIndex === rounds.length - 2) { 
                 document.getElementById('nextRoundBtn').classList.add('hidden');
                 document.getElementById('finishBtn').classList.remove('hidden');
             } else {
@@ -768,7 +926,6 @@
             }
         }
 
-        // --- SELECTION LOGIC ---
         let pendingMatchIdx = -1;
         let pendingWinnerObj = null;
 
@@ -796,7 +953,6 @@
             });
             
             modal.classList.remove('hidden');
-            // Small delay to allow display:block to apply before opacity transition
             setTimeout(() => {
                 modal.classList.remove('opacity-0');
                 modal.querySelector('div').classList.remove('scale-95');
@@ -809,24 +965,15 @@
             modal.classList.add('opacity-0');
             modal.querySelector('div').classList.remove('scale-100');
             modal.querySelector('div').classList.add('scale-95');
-            
-            // Wait for transition
-            setTimeout(() => {
-                 modal.classList.add('hidden');
-            }, 300);
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
         function confirmPick(sets) {
-            // Update Data
             currentBracket[pendingMatchIdx].winner = pendingWinnerObj;
             currentBracket[pendingMatchIdx].sets = sets;
-            
             const roundName = getRoundName(currentRoundIndex);
-            if (!userPicks[currentCategory][roundName]) {
-                userPicks[currentCategory][roundName] = [];
-            }
+            if (!userPicks[currentCategory][roundName]) userPicks[currentCategory][roundName] = [];
             userPicks[currentCategory][roundName] = currentBracket;
-
             closeModal();
             renderRound(); 
         }
@@ -843,10 +990,8 @@
                 alert("Seleziona un vincitore per tutti i match prima di procedere!");
                 return;
             }
-            // Save state firmly
             const roundName = getRoundName(currentRoundIndex);
             userPicks[currentCategory][roundName] = JSON.parse(JSON.stringify(currentBracket));
-
             changeRound(1);
         }
 
@@ -856,7 +1001,6 @@
                 alert("Chi vince la finale?");
                 return;
             }
-            
             const roundName = getRoundName(currentRoundIndex);
             userPicks[currentCategory][roundName] = JSON.parse(JSON.stringify(currentBracket));
 
@@ -893,8 +1037,8 @@
             document.getElementById('gameInterface').classList.add('hidden');
             document.getElementById('exportPanel').classList.remove('hidden');
             
-            const payload = { n: currentUser, t: Date.now(), p: userPicks };
-            // Minify payload to keep string short? Not strictly needed for copy-paste
+            // INCLUDE "a" (auto) flag in payload
+            const payload = { n: currentUser, t: Date.now(), p: userPicks, a: isAutoFilled ? 1 : 0 };
             const jsonStr = JSON.stringify(payload);
             const b64 = btoa(encodeURIComponent(jsonStr)); 
             document.getElementById('exportCodeText').value = b64;
@@ -922,7 +1066,7 @@
             doc.setFontSize(24);
             doc.text("AO 2026 - PREVISIONI", 14, 20);
             doc.setFontSize(14);
-            doc.text("Partecipante: " + currentUser, 14, 32);
+            doc.text("Partecipante: " + currentUser + (isAutoFilled ? " (Auto)" : ""), 14, 32);
 
             let yPos = 50;
 
@@ -936,22 +1080,17 @@
                 const picks = userPicks[cat];
                 let rows = [];
                 
-                // Show R16 onwards
-                const startIdx = 3; // R16 is index 3 in array
-                
+                const startIdx = 3; 
                 for(let i=startIdx; i<rounds.length; i++) {
                     const r = rounds[i];
                     if (!picks[r]) continue;
-                    
                     picks[r].forEach(m => {
-                        // Extract Name from Object
                         const winnerName = m.winner ? m.winner.n : "-";
                         const p1Name = m.p1 ? m.p1.n : "Bye";
                         const p2Name = m.p2 ? m.p2.n : "Bye";
                         rows.push([r, `${p1Name} vs ${p2Name}`, winnerName, m.sets + " sets"]);
                     });
                 }
-
                 doc.autoTable({
                     startY: yPos,
                     head: [['Turno', 'Match', 'Vincitore Scelto', 'Set']],
@@ -960,7 +1099,6 @@
                     headStyles: { fillColor: [0, 145, 210] },
                     styles: { fontSize: 10, cellPadding: 2 }
                 });
-                
                 yPos = doc.lastAutoTable.finalY + 15;
             };
 
@@ -978,7 +1116,6 @@
             if (p === "admin2026") {
                 document.getElementById('adminPanel').classList.remove('hidden');
                 updateAdminPlayerList();
-                // We also need to reload ranking to populate the table which is now in admin panel
                 loadRanking();
             }
         }
@@ -991,14 +1128,7 @@
             document.getElementById('admin-results').classList.add('hidden');
             document.getElementById('admin-players').classList.add('hidden');
             document.getElementById('admin-ranking').classList.add('hidden');
-            
-            // Buttons visual update could be added here but simple toggle works
-            ['results', 'players', 'ranking'].forEach(t => {
-                // Reset button style logic if needed, simplied for now
-            });
-            
             document.getElementById(`admin-${tab}`).classList.remove('hidden');
-            
             if(tab === 'ranking') loadRanking();
         }
 
@@ -1008,12 +1138,9 @@
             toggleAdmin();
             document.getElementById('registrationPanel').classList.add('hidden');
             document.getElementById('gameInterface').classList.remove('hidden');
-            
-            // Visual indicator
             document.querySelector('header').classList.remove('ao-gradient');
             document.querySelector('header').classList.add('bg-gray-800');
             document.getElementById('currentUserDisplay').innerText = "ADMIN MODE";
-            
             userPicks = { M: {}, W: {} };
             startTournament('M');
         }
@@ -1027,7 +1154,6 @@
                 const data = JSON.parse(jsonStr);
                 
                 const points = calculatePoints(data.p);
-                
                 const exists = participants.findIndex(p => p.name === data.n);
                 if(exists !== -1) participants.splice(exists, 1);
 
@@ -1035,6 +1161,7 @@
                     name: data.n,
                     picks: data.p,
                     points: points,
+                    isAuto: data.a === 1, // READ AUTO FLAG
                     id: Date.now()
                 };
 
@@ -1044,7 +1171,7 @@
                 alert(`Giocatore ${data.n} aggiunto!`);
                 updateAdminPlayerList();
                 document.getElementById('importCodeInput').value = "";
-                loadRanking(); // Update ranking table
+                loadRanking();
             } catch (e) {
                 alert("Codice non valido!");
             }
@@ -1052,22 +1179,16 @@
 
         function calculatePoints(playerPicks) {
             if (!officialResults) return 0;
-            
             let total = 0;
-            
             ['M', 'W'].forEach(cat => {
                 const rounds = cat === 'M' ? ROUNDS_M : ROUNDS_W;
                 rounds.forEach(r => {
                     const playerRound = playerPicks[cat][r];
                     const officialRound = officialResults[cat][r];
-                    
                     if (!playerRound || !officialRound) return;
-
                     playerRound.forEach((pm, idx) => {
                         const om = officialRound[idx];
                         if (!om || !om.winner) return;
-
-                        // Compare names (strings)
                         if (pm.winner.n === om.winner.n) {
                             total += POINTS[r];
                             if (parseInt(pm.sets) === parseInt(om.sets)) {
@@ -1086,10 +1207,13 @@
             participants.sort((a,b) => b.points - a.points).forEach((p, idx) => {
                 const li = document.createElement('li');
                 li.className = "flex justify-between items-center p-3 hover:bg-gray-50 bg-white";
+                // Show AUTO badge if applicable
+                const autoBadge = p.isAuto ? '<span class="text-[10px] bg-red-100 text-red-600 px-1 rounded border border-red-200 ml-2" title="Compilazione Automatica"><i class="fas fa-robot"></i> AUTO</span>' : '';
+                
                 li.innerHTML = `
                     <div class="flex items-center gap-3">
                         <span class="text-gray-400 font-mono text-xs w-4">${idx+1}.</span>
-                        <span class="font-bold text-gray-700">${p.name}</span>
+                        <span class="font-bold text-gray-700">${p.name} ${autoBadge}</span>
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="font-bold text-white bg-aoBlue px-2 py-0.5 rounded text-xs">${p.points} pt</span>
@@ -1112,8 +1236,6 @@
 
         function loadRanking() {
             const tbody = document.getElementById('rankingTableBody');
-            
-            // Re-calc points
             participants.forEach(p => p.points = calculatePoints(p.picks));
             participants.sort((a,b) => b.points - a.points);
 
@@ -1131,10 +1253,14 @@
                 if(idx===0) rankDisplay = `<i class="fas fa-trophy text-yellow-400 text-lg"></i>`;
                 if(idx===1) rankDisplay = `<i class="fas fa-medal text-gray-400 text-lg"></i>`;
                 if(idx===2) rankDisplay = `<i class="fas fa-medal text-orange-400 text-lg"></i>`;
+                
+                // Show AUTO badge in official ranking too? Maybe better to hide it for cleanliness, but showing helps transparency.
+                // Let's hide it in public ranking, show in admin list. Here is public-ish ranking inside admin panel.
+                const autoIcon = p.isAuto ? '<i class="fas fa-robot text-gray-300 ml-1" title="Generato Automaticamente"></i>' : '';
 
                 tr.innerHTML = `
                     <td class="p-4">${rankDisplay}</td>
-                    <td class="p-4 font-bold text-gray-800">${p.name}</td>
+                    <td class="p-4 font-bold text-gray-800">${p.name} ${autoIcon}</td>
                     <td class="p-4 text-right font-bold text-aoBlue text-lg">${p.points}</td>
                     <td class="p-4 text-center">
                         <button onclick="viewPlayerDetails(${p.id})" class="text-aoBlue hover:bg-blue-100 p-2 rounded-full transition"><i class="fas fa-eye"></i></button>
@@ -1147,34 +1273,20 @@
         function viewPlayerDetails(id) {
             const p = participants.find(x => x.id === id);
             if(!p) return;
-            
-            document.getElementById('detailModalTitle').innerText = p.name;
+            document.getElementById('detailModalTitle').innerText = p.name + (p.isAuto ? " (Generato Automaticamente)" : "");
             const content = document.getElementById('detailModalContent');
-            
             let html = "";
             ['M', 'W'].forEach(cat => {
                 const catTitle = cat === 'M' ? '<i class="fas fa-mars text-blue-500 mr-2"></i> Tabellone Maschile' : '<i class="fas fa-venus text-pink-500 mr-2"></i> Tabellone Femminile';
                 html += `<div class="mb-8"><h4 class="font-bold text-xl text-gray-800 border-b pb-2 mb-4">${catTitle}</h4>`;
-                
-                // Show R16 onwards
                 const rounds = ['R16', 'QF', 'SF', 'F', 'WINNER'];
                 rounds.forEach(r => {
                     const picks = p.picks[cat][r];
                     if(picks) {
-                        html += `<div class="mb-4">
-                            <div class="inline-block bg-gray-200 text-gray-600 text-xs font-bold px-2 py-1 rounded mb-2">${r}</div>
-                            <div class="grid grid-cols-1 gap-2">`;
-                        
+                        html += `<div class="mb-4"><div class="inline-block bg-gray-200 text-gray-600 text-xs font-bold px-2 py-1 rounded mb-2">${r}</div><div class="grid grid-cols-1 gap-2">`;
                         picks.forEach(m => {
                             if(m.winner) {
-                                html += `
-                                <div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm">
-                                    <div class="flex items-center gap-2">
-                                        ${getFlagHtml(m.winner.c)}
-                                        <span class="text-sm font-medium">${m.winner.n}</span>
-                                    </div>
-                                    <span class="text-xs font-bold bg-blue-50 text-aoBlue px-2 py-0.5 rounded">${m.sets} sets</span>
-                                </div>`;
+                                html += `<div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm"><div class="flex items-center gap-2">${getFlagHtml(m.winner.c)}<span class="text-sm font-medium">${m.winner.n}</span></div><span class="text-xs font-bold bg-blue-50 text-aoBlue px-2 py-0.5 rounded">${m.sets} sets</span></div>`;
                             }
                         });
                         html += `</div></div>`;
@@ -1182,14 +1294,11 @@
                 });
                 html += `</div>`;
             });
-            
             content.innerHTML = html;
             document.getElementById('playerDetailsModal').classList.remove('hidden');
         }
 
-        // Start
         init();
-
     </script>
 </body>
 </html>
