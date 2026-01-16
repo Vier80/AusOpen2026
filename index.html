@@ -482,7 +482,7 @@
         // Winning SF (reaching Final) = 35pts
         // Finalist (Runner-Up) = 40pts
         // Winning F (Champion) = 50pts
-        const POINTS = { 'R128': 10, 'R64': 15, 'R32': 20, 'R16': 25, 'QF': 30, 'SF': 35, 'F': 50, 'FINALIST': 40, 'WINNER': 0 };
+        const POINTS = { 'R128': 10, 'R64': 15, 'R32': 20, 'R16': 25, 'QF': 30, 'SF': 35, 'F': 40, 'WINNER': 50 };
         const SET_BONUS = 10;
 
         // IOC to ISO-2 Map for Flag Icons
@@ -1401,56 +1401,113 @@
                 html += `<div class="mb-8"><h4 class="font-bold text-xl text-gray-800 border-b pb-2 mb-4">${catTitle}</h4>`;
                 const rounds = ['R128', 'R64', 'R32', 'R16', 'QF', 'SF', 'F', 'WINNER'];
                 rounds.forEach(r => {
-                    const picks = p.picks[cat][r];
+                    const picks = r === 'WINNER' ? p.picks[cat]['F'] : p.picks[cat][r];
                     if(picks) {
-                        html += `<div class="mb-4"><div class="inline-block bg-gray-200 text-gray-600 text-xs font-bold px-2 py-1 rounded mb-2">${r} <span class="font-normal text-gray-400 ml-1">(${POINTS[r]} pt)</span></div><div class="grid grid-cols-1 gap-2">`;
+                        let headerTitle = r;
+                        let pointsLabel = POINTS[r];
+                        if(r === 'F') {
+                            headerTitle = "Finalista (Perdente Finale)";
+                            pointsLabel = POINTS['FINALIST'];
+                        } else if(r === 'WINNER') {
+                            headerTitle = "Vincitore del Torneo";
+                            pointsLabel = POINTS['F']; // Usually 50
+                        }
+
+                        html += `<div class="mb-4"><div class="inline-block bg-gray-200 text-gray-600 text-xs font-bold px-2 py-1 rounded mb-2">${headerTitle} <span class="font-normal text-gray-400 ml-1">(${pointsLabel} pt)</span></div><div class="grid grid-cols-1 gap-2">`;
+                        
                         picks.forEach((m, idx) => {
-                            if(m.winner) {
-                                let scoreBadge = "";
-                                
-                                // CALCOLO PUNTEGGIO SINGOLO MATCH
-                                if (officialResults && officialResults[cat] && officialResults[cat][r]) {
-                                    const om = officialResults[cat][r][idx];
-                                    if (om && om.winner) {
-                                        if (m.winner.n === om.winner.n) {
-                                            let pts = POINTS[r];
-                                            let bonusHtml = "";
-                                            if (parseInt(m.sets) === parseInt(om.sets)) {
-                                                pts += SET_BONUS;
-                                                bonusHtml = `<i class="fas fa-star text-[10px] ml-1 text-yellow-500" title="Bonus Set (+${SET_BONUS})"></i>`;
+                            // Logic for WINNER round: show the winner of the F match
+                            if (r === 'WINNER') {
+                                if (m.winner) {
+                                    let scoreBadge = "";
+                                    if (officialResults && officialResults[cat] && officialResults[cat]['F']) {
+                                        const om = officialResults[cat]['F'][idx];
+                                        if (om && om.winner) {
+                                            if (m.winner.n === om.winner.n) {
+                                                let pts = POINTS['F'];
+                                                scoreBadge = `<div class="ml-2 px-2 py-1 rounded bg-green-100 text-green-700 text-xs font-bold border border-green-200 flex items-center shadow-sm">+${pts} pt</div>`;
+                                            } else {
+                                                scoreBadge = `<div class="ml-2 px-2 py-1 rounded bg-red-50 text-red-400 text-xs font-bold border border-red-100 flex items-center" title="Vincitore Reale: ${om.winner.n}">0 pt</div>`;
                                             }
-                                            scoreBadge = `<div class="ml-2 px-2 py-1 rounded bg-green-100 text-green-700 text-xs font-bold border border-green-200 flex items-center shadow-sm">+${pts} pt${bonusHtml}</div>`;
                                         } else {
-                                            scoreBadge = `<div class="ml-2 px-2 py-1 rounded bg-red-50 text-red-400 text-xs font-bold border border-red-100 flex items-center" title="Vincitore Reale: ${om.winner.n}">0 pt</div>`;
-                                        }
-                                    } else {
-                                         scoreBadge = `<div class="ml-2 px-2 py-1 rounded bg-gray-100 text-gray-400 text-[10px] border border-gray-200 italic">In corso</div>`;
-                                    }
-                                }
-
-                                // VISUALIZZAZIONE SPECIALE PER IL FINALISTA (PERDENTE FINALE)
-                                if (r === 'F') {
-                                    const userLoser = m.winner.n === m.p1.n ? m.p2 : m.p1;
-                                    const om = officialResults && officialResults[cat] && officialResults[cat][r] ? officialResults[cat][r][idx] : null;
-                                    
-                                    if(om && om.winner) {
-                                        const officialLoser = om.winner.n === om.p1.n ? om.p2 : om.p1;
-                                        if (userLoser && officialLoser && userLoser.n === officialLoser.n) {
-                                             scoreBadge += `<div class="ml-2 px-2 py-1 rounded bg-blue-100 text-blue-700 text-xs font-bold border border-blue-200 flex items-center shadow-sm">Finalista: +${POINTS['FINALIST']} pt</div>`;
+                                            scoreBadge = `<div class="ml-2 px-2 py-1 rounded bg-gray-100 text-gray-400 text-[10px] border border-gray-200 italic">In corso</div>`;
                                         }
                                     }
-                                }
-
-                                html += `<div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm hover:bg-gray-50 transition">
-                                            <div class="flex items-center gap-2 overflow-hidden flex-1">
-                                                ${getFlagHtml(m.winner.c)}
-                                                <span class="text-sm font-medium truncate text-gray-700" title="${m.winner.n}">${m.winner.n}</span>
-                                            </div>
-                                            <div class="flex items-center shrink-0">
-                                                <span class="text-[10px] font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200 mr-1">${m.sets}s</span>
+                                    html += `<div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm hover:bg-gray-50 transition">
+                                                <div class="flex items-center gap-2 overflow-hidden flex-1">
+                                                    ${getFlagHtml(m.winner.c)}
+                                                    <span class="text-sm font-medium truncate text-gray-700" title="${m.winner.n}">${m.winner.n}</span>
+                                                </div>
                                                 ${scoreBadge}
-                                            </div>
-                                         </div>`;
+                                             </div>`;
+                                }
+                            }
+                            // Logic for F round: show the LOSER (Finalist)
+                            else if (r === 'F') {
+                                if (m.winner) {
+                                    const loser = m.winner.n === m.p1.n ? m.p2 : m.p1;
+                                    if(loser) {
+                                        let scoreBadge = "";
+                                        if (officialResults && officialResults[cat] && officialResults[cat]['F']) {
+                                            const om = officialResults[cat]['F'][idx];
+                                            if (om && om.winner) {
+                                                const officialLoser = om.winner.n === om.p1.n ? om.p2 : om.p1;
+                                                if (officialLoser && loser.n === officialLoser.n) {
+                                                    let pts = POINTS['FINALIST'];
+                                                    scoreBadge = `<div class="ml-2 px-2 py-1 rounded bg-green-100 text-green-700 text-xs font-bold border border-green-200 flex items-center shadow-sm">+${pts} pt</div>`;
+                                                } else {
+                                                    scoreBadge = `<div class="ml-2 px-2 py-1 rounded bg-red-50 text-red-400 text-xs font-bold border border-red-100 flex items-center" title="Finalista Reale: ${officialLoser ? officialLoser.n : '?'}">0 pt</div>`;
+                                                }
+                                            } else {
+                                                scoreBadge = `<div class="ml-2 px-2 py-1 rounded bg-gray-100 text-gray-400 text-[10px] border border-gray-200 italic">In corso</div>`;
+                                            }
+                                        }
+                                        html += `<div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm hover:bg-gray-50 transition">
+                                                    <div class="flex items-center gap-2 overflow-hidden flex-1">
+                                                        ${getFlagHtml(loser.c)}
+                                                        <span class="text-sm font-medium truncate text-gray-700" title="${loser.n}">${loser.n}</span>
+                                                    </div>
+                                                    ${scoreBadge}
+                                                 </div>`;
+                                    }
+                                }
+                            }
+                            // Standard Logic for other rounds
+                            else {
+                                if(m.winner) {
+                                    let scoreBadge = "";
+                                    
+                                    // CALCOLO PUNTEGGIO SINGOLO MATCH
+                                    if (officialResults && officialResults[cat] && officialResults[cat][r]) {
+                                        const om = officialResults[cat][r][idx];
+                                        if (om && om.winner) {
+                                            if (m.winner.n === om.winner.n) {
+                                                let pts = POINTS[r];
+                                                let bonusHtml = "";
+                                                if (parseInt(m.sets) === parseInt(om.sets)) {
+                                                    pts += SET_BONUS;
+                                                    bonusHtml = `<i class="fas fa-star text-[10px] ml-1 text-yellow-500" title="Bonus Set (+${SET_BONUS})"></i>`;
+                                                }
+                                                scoreBadge = `<div class="ml-2 px-2 py-1 rounded bg-green-100 text-green-700 text-xs font-bold border border-green-200 flex items-center shadow-sm">+${pts} pt${bonusHtml}</div>`;
+                                            } else {
+                                                scoreBadge = `<div class="ml-2 px-2 py-1 rounded bg-red-50 text-red-400 text-xs font-bold border border-red-100 flex items-center" title="Vincitore Reale: ${om.winner.n}">0 pt</div>`;
+                                            }
+                                        } else {
+                                             scoreBadge = `<div class="ml-2 px-2 py-1 rounded bg-gray-100 text-gray-400 text-[10px] border border-gray-200 italic">In corso</div>`;
+                                        }
+                                    }
+
+                                    html += `<div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm hover:bg-gray-50 transition">
+                                                <div class="flex items-center gap-2 overflow-hidden flex-1">
+                                                    ${getFlagHtml(m.winner.c)}
+                                                    <span class="text-sm font-medium truncate text-gray-700" title="${m.winner.n}">${m.winner.n}</span>
+                                                </div>
+                                                <div class="flex items-center shrink-0">
+                                                    <span class="text-[10px] font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200 mr-1">${m.sets}s</span>
+                                                    ${scoreBadge}
+                                                </div>
+                                             </div>`;
+                                }
                             }
                         });
                         html += `</div></div>`;
