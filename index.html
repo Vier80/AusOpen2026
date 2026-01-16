@@ -299,11 +299,7 @@
                             </li>
                             <li class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
                                 <span class="text-sm font-medium">Semifinale (SF)</span>
-                                <span class="font-bold text-aoDarkBlue">35 pt</span>
-                            </li>
-                            <li class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                <span class="text-sm font-medium">Finalista</span>
-                                <span class="font-bold text-aoDarkBlue">40 pt</span>
+                                <span class="font-bold text-aoDarkBlue">40 pt</span> <!-- CORRETTO A 40 -->
                             </li>
                             <li class="flex justify-between items-center p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                                 <span class="text-sm font-bold text-aoDarkBlue">VINCITORE</span>
@@ -353,8 +349,12 @@
                     <!-- Sub-Tab: Ranking (Now here) -->
                     <div id="admin-ranking" class="animate-fade-in">
                         <div class="bg-white rounded-xl shadow-card overflow-hidden">
-                            <div class="bg-aoDarkBlue p-4 text-white text-center">
-                                <h2 class="text-lg font-bold">Classifica Ufficiale Partecipanti</h2>
+                            <!-- Header modificato con pulsante WhatsApp -->
+                            <div class="bg-aoDarkBlue p-4 text-white flex justify-between items-center">
+                                <h2 class="text-lg font-bold">Classifica Ufficiale</h2>
+                                <button onclick="copyRankingToClipboard()" class="bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-md flex items-center gap-2 transition transform hover:scale-105">
+                                    <i class="fab fa-whatsapp text-lg"></i> Copia Classifica
+                                </button>
                             </div>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-left">
@@ -466,7 +466,11 @@
         // --- DATA & STATE ---
         const ROUNDS_M = ['R128', 'R64', 'R32', 'R16', 'QF', 'SF', 'F', 'WINNER'];
         const ROUNDS_W = ['R128', 'R64', 'R32', 'R16', 'QF', 'SF', 'F', 'WINNER'];
-        const POINTS = { 'R128': 10, 'R64': 15, 'R32': 20, 'R16': 25, 'QF': 30, 'SF': 35, 'F': 40, 'WINNER': 50 };
+        
+        // UPDATED LOGIC: 
+        // Winning SF gives 40pts (reaching Final -> Finalist)
+        // Winning F gives 50pts (Winning -> Champion)
+        const POINTS = { 'R128': 10, 'R64': 15, 'R32': 20, 'R16': 25, 'QF': 30, 'SF': 40, 'F': 50, 'WINNER': 0 };
         const SET_BONUS = 10;
 
         // IOC to ISO-2 Map for Flag Icons
@@ -1262,6 +1266,44 @@
                 `;
                 list.appendChild(li);
             });
+        }
+
+        // NUOVA FUNZIONE PER COPIARE LA CLASSIFICA
+        function copyRankingToClipboard() {
+            // Ricalcola i punti per sicurezza
+            participants.forEach(p => p.points = calculatePoints(p.picks));
+            participants.sort((a,b) => b.points - a.points);
+
+            if (participants.length === 0) {
+                alert("La classifica è vuota, non c'è nulla da copiare!");
+                return;
+            }
+
+            let text = "🏆 *CLASSIFICA AO 2026* 🏆\n\n";
+            
+            participants.forEach((p, i) => {
+                let rankIcon = `${i + 1}.`;
+                if (i === 0) rankIcon = "🥇";
+                if (i === 1) rankIcon = "🥈";
+                if (i === 2) rankIcon = "🥉";
+                
+                // Aggiunge (Auto) se il giocatore ha usato l'autocompilazione
+                const autoLabel = p.isAuto ? " 🤖" : "";
+                
+                text += `${rankIcon} *${p.name}*${autoLabel}: ${p.points} pt\n`;
+            });
+
+            text += "\n🎾 _Aggiornamento Live_";
+
+            // Metodo compatibile per copiare negli appunti
+            const textarea = document.createElement("textarea");
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textarea);
+            
+            alert("Classifica copiata! Ora puoi incollarla su WhatsApp.");
         }
 
         function deletePlayer(id) {
