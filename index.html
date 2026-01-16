@@ -190,6 +190,13 @@
                     </button>
                 </div>
 
+                <!-- Admin Live Ranking Button (Hidden by default) -->
+                <div id="adminLiveRankingContainer" class="hidden w-full mb-6">
+                    <button onclick="openAdminRanking()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-bold shadow-md transition flex items-center justify-center gap-2 transform hover:-translate-y-0.5">
+                        <i class="fas fa-trophy"></i> VEDI CLASSIFICA AGGIORNATA
+                    </button>
+                </div>
+
                 <!-- Round Progress -->
                 <div class="bg-white p-4 rounded-xl shadow-card mb-6 flex items-center justify-between overflow-x-auto border border-gray-100">
                     <div class="flex gap-3 text-xs font-bold whitespace-nowrap overflow-x-auto pb-1" id="roundIndicator">
@@ -976,6 +983,12 @@
             userPicks[currentCategory][roundName] = currentBracket;
             closeModal();
             renderRound(); 
+            
+            // Add immediate save for Admin
+            if(isAdminMode) {
+                officialResults = JSON.parse(JSON.stringify(userPicks));
+                localStorage.setItem('ao26_official', JSON.stringify(officialResults));
+            }
         }
 
         function changeRound(delta) {
@@ -1087,7 +1100,8 @@
                 const picks = userPicks[cat];
                 let rows = [];
                 
-                const startIdx = 3; 
+                // Changed from 3 to 0 to show ALL rounds
+                const startIdx = 0; 
                 for(let i=startIdx; i<rounds.length; i++) {
                     const r = rounds[i];
                     if (!picks[r]) continue;
@@ -1109,9 +1123,9 @@
                 yPos = doc.lastAutoTable.finalY + 15;
             };
 
-            printCategory('M', "Tabellone Maschile (Dai R16)");
+            printCategory('M', "Tabellone Maschile");
             if (yPos > 220) { doc.addPage(); yPos = 20; }
-            printCategory('W', "Tabellone Femminile (Dai R16)");
+            printCategory('W', "Tabellone Femminile");
 
             doc.save(`AO26_Contest_${currentUser}.pdf`);
         }
@@ -1119,12 +1133,22 @@
         // --- ADMIN & SCORING ---
 
         function promptAdminPassword() {
+            if (isAdminMode) {
+                 document.getElementById('adminPanel').classList.remove('hidden');
+                 switchAdminTab('ranking');
+                 return;
+            }
             const p = prompt("Password Admin:");
             if (p === "admin2026") {
                 document.getElementById('adminPanel').classList.remove('hidden');
                 updateAdminPlayerList();
                 loadRanking();
             }
+        }
+        
+        function openAdminRanking() {
+            document.getElementById('adminPanel').classList.remove('hidden');
+            switchAdminTab('ranking');
         }
 
         function toggleAdmin() {
@@ -1148,6 +1172,7 @@
             document.querySelector('header').classList.remove('ao-gradient');
             document.querySelector('header').classList.add('bg-gray-800');
             document.getElementById('currentUserDisplay').innerText = "ADMIN MODE";
+            document.getElementById('adminLiveRankingContainer').classList.remove('hidden');
             
             // Load existing official results if available, otherwise start fresh
             if (officialResults) {
