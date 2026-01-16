@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Australian Open 2026 - Il Grande Contest</title>
+    
+    <!-- Librerie Esterne (Tailwind, FontAwesome, JSPDF) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <!-- Flag Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        aoBlue: '#0091D2',
+                        aoDarkBlue: '#00629B',
+                        aoYellow: '#FFC72C',
+                        aoGreen: '#00A651',
+                        surface: '#ffffff',
+                        surfaceHover: '#f9fafb'
+                    },
+                    fontFamily: {
+                        sans: ['Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'card': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                        'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #f0f4f8;
+            background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
+        }
+        .ao-gradient {
+            background: linear-gradient(135deg, #0091D2 0%, #00629B 100%);
+        }
+        .match-card {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .player-box {
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        .player-box:hover {
+            background-color: #f3f4f6;
+        }
+        .player-box.selected {
+            background-color: #ebf8ff; /* Light Blue tint */
+            border-color: #0091D2;
+            box-shadow: inset 0 0 0 1px #0091D2;
+        }
+        .player-box.selected .player-name {
+            color: #00629B;
+            font-weight: 800;
+        }
+        .flag-icon {
+            border-radius: 2px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+    </style>
+</head>
+<body class="text-gray-800 min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="ao-gradient text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-tennis-ball text-aoYellow text-2xl animate-spin-slow"></i>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold tracking-tight">AO 2026 CONTEST</h1>
+                    <p class="text-xs text-blue-200">Official Prediction Game</p>
+                </div>
+            </div>
+            <div class="text-sm font-semibold bg-white/10 px-3 py-1 rounded-full border border-white/20 backdrop-blur-sm">
+                <i class="far fa-user mr-1"></i> <span id="currentUserDisplay">Ospite</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container max-w-4xl mx-auto px-2 py-6">
+        
+        <!-- Navigation Tabs (Public: Only Play and Rules) -->
+        <div class="flex justify-center mb-8 bg-white rounded-xl shadow-card p-1 sticky top-20 z-40 mx-2 md:mx-0">
+            <button onclick="switchTab('play')" id="btn-play" class="flex-1 py-3 rounded-lg text-sm font-bold transition-all duration-200 bg-aoBlue text-white shadow-sm">
+                <i class="fas fa-gamepad mr-2"></i> GIOCA
+            </button>
+            <button onclick="switchTab('rules')" id="btn-rules" class="flex-1 py-3 rounded-lg text-sm font-bold text-gray-500 hover:bg-gray-50 transition-all duration-200">
+                <i class="fas fa-book mr-2"></i> REGOLE
+            </button>
+        </div>
+
+        <!-- SECTION: PLAY -->
+        <div id="tab-play" class="space-y-6">
+            
+            <!-- Registration / Status -->
+            <div id="registrationPanel" class="bg-white rounded-xl shadow-card p-8 border-t-4 border-aoYellow max-w-md mx-auto text-center">
+                <div class="mb-4 text-aoBlue text-4xl"><i class="fas fa-user-circle"></i></div>
+                <h2 class="text-2xl font-bold text-aoDarkBlue mb-2">Benvenuto al Contest!</h2>
+                <p class="text-gray-600 mb-6">Inserisci il tuo nome completo per iniziare a compilare il tabellone.</p>
+                <div class="flex flex-col gap-3">
+                    <input type="text" id="playerNameInput" placeholder="Nome e Cognome" class="w-full border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-aoBlue text-center font-medium">
+                    <button onclick="registerPlayer()" class="w-full bg-aoBlue hover:bg-aoDarkBlue text-white font-bold py-3 px-6 rounded-lg transition shadow-md hover:shadow-lg">INIZIA A GIOCARE</button>
+                </div>
+            </div>
+
+            <!-- Game Interface (Hidden until registered) -->
+            <div id="gameInterface" class="hidden animate-fade-in">
+                
+                <!-- Category Selector -->
+                <div class="flex justify-center gap-4 mb-6">
+                    <button onclick="setCategory('M')" id="btn-cat-M" class="group relative px-8 py-3 rounded-full font-bold bg-aoBlue text-white shadow-lg transform transition-all hover:-translate-y-0.5">
+                        <span class="mr-2">ATP</span> UOMINI
+                        <div class="absolute -bottom-1 left-1/2 w-1 h-1 bg-aoYellow rounded-full transform -translate-x-1/2 opacity-0 group-hover:opacity-100"></div>
+                    </button>
+                    <button onclick="setCategory('W')" id="btn-cat-W" class="group relative px-8 py-3 rounded-full font-bold bg-white text-gray-500 shadow border border-gray-200 hover:border-aoBlue hover:text-aoBlue transition-all">
+                        <span class="mr-2">WTA</span> DONNE
+                    </button>
+                </div>
+
+                <!-- Round Progress -->
+                <div class="bg-white p-4 rounded-xl shadow-card mb-6 flex items-center justify-between overflow-x-auto border border-gray-100">
+                    <div class="flex gap-3 text-xs font-bold whitespace-nowrap" id="roundIndicator">
+                        <!-- Populated by JS -->
+                    </div>
+                    <div class="flex items-center gap-2 ml-4">
+                        <div class="h-2 w-24 bg-gray-100 rounded-full overflow-hidden">
+                            <div id="progressBar" class="h-full bg-aoGreen transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                        <div class="text-xs font-bold text-aoGreen" id="progressText">0%</div>
+                    </div>
+                </div>
+
+                <!-- Bracket / Match List -->
+                <div id="matchesContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Matches injected here -->
+                </div>
+
+                <!-- Navigation Buttons -->
+                <div class="flex justify-between items-center mt-8 bg-white p-4 rounded-xl shadow-card sticky bottom-4 z-30 border border-gray-100">
+                    <button id="prevRoundBtn" onclick="changeRound(-1)" class="hidden px-5 py-2.5 bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg font-bold transition flex items-center gap-2">
+                        <i class="fas fa-arrow-left"></i> Indietro
+                    </button>
+                    
+                    <div class="text-xs text-gray-400 font-medium hidden md:block">
+                        Fai tap sul giocatore per selezionarlo
+                    </div>
+
+                    <button id="nextRoundBtn" onclick="nextRound()" class="ml-auto px-6 py-2.5 bg-aoYellow text-aoDarkBlue hover:bg-yellow-400 rounded-lg font-bold shadow-md hover:shadow-lg transition flex items-center gap-2">
+                        Prossimo Turno <i class="fas fa-arrow-right"></i>
+                    </button>
+                    <button id="finishBtn" onclick="finishPrediction()" class="hidden ml-auto px-6 py-2.5 bg-aoGreen text-white hover:bg-green-600 rounded-lg font-bold shadow-md hover:shadow-lg transition flex items-center gap-2">
+                        <i class="fas fa-check-circle"></i> CONCLUDI
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results & Export (Hidden until finished) -->
+            <div id="exportPanel" class="hidden bg-white rounded-xl shadow-2xl p-8 text-center max-w-2xl mx-auto mt-10">
+                <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i class="fas fa-check text-4xl text-aoGreen"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">Ottimo Lavoro!</h2>
+                <p class="text-gray-600 mb-8">Hai completato tutte le previsioni. Invia il codice all'Admin.</p>
+                
+                <div class="bg-gray-50 border border-gray-200 p-6 rounded-xl mb-6 text-left relative group">
+                    <label class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Codice di Verifica</label>
+                    <textarea id="exportCodeText" readonly class="w-full h-24 bg-white border border-gray-300 p-3 text-xs font-mono rounded-lg resize-none focus:ring-2 focus:ring-aoBlue focus:border-transparent text-gray-600" onclick="this.select()"></textarea>
+                    
+                    <button onclick="copyCode()" class="mt-3 w-full bg-aoDarkBlue hover:bg-aoBlue text-white py-2.5 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 shadow-sm">
+                        <i class="far fa-copy"></i> Copia Codice per WhatsApp
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 gap-4">
+                    <button onclick="generatePDF()" class="w-full bg-white border-2 border-red-500 text-red-500 hover:bg-red-50 py-3 rounded-lg font-bold transition flex items-center justify-center gap-2">
+                        <i class="fas fa-file-pdf"></i> Scarica PDF Riassuntivo
+                    </button>
+                    <button onclick="resetGame()" class="text-sm text-gray-400 hover:text-gray-600 underline">
+                        Inizia un nuovo contest
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SECTION: RULES -->
+        <div id="tab-rules" class="hidden">
+            <div class="bg-white rounded-xl shadow-card p-8 space-y-6">
+                <div class="flex items-center gap-4 border-b pb-4">
+                    <div class="bg-aoYellow p-3 rounded-full text-aoDarkBlue"><i class="fas fa-gavel text-xl"></i></div>
+                    <h2 class="text-2xl font-bold text-aoDarkBlue">Regolamento</h2>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="font-bold text-lg text-aoBlue mb-3">Punteggi per Turno</h3>
+                        <ul class="space-y-3">
+                            <li class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-sm font-medium">Round 128</span>
+                                <span class="font-bold text-aoDarkBlue">10 pt</span>
+                            </li>
+                            <li class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-sm font-medium">Round 64</span>
+                                <span class="font-bold text-aoDarkBlue">15 pt</span>
+                            </li>
+                            <li class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-sm font-medium">Round 32</span>
+                                <span class="font-bold text-aoDarkBlue">20 pt</span>
+                            </li>
+                            <li class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-sm font-medium">Ottavi (R16)</span>
+                                <span class="font-bold text-aoDarkBlue">25 pt</span>
+                            </li>
+                            <li class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-sm font-medium">Quarti (QF)</span>
+                                <span class="font-bold text-aoDarkBlue">30 pt</span>
+                            </li>
+                            <li class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-sm font-medium">Semifinale (SF)</span>
+                                <span class="font-bold text-aoDarkBlue">35 pt</span>
+                            </li>
+                            <li class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                                <span class="text-sm font-medium">Finalista</span>
+                                <span class="font-bold text-aoDarkBlue">40 pt</span>
+                            </li>
+                            <li class="flex justify-between items-center p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                <span class="text-sm font-bold text-aoDarkBlue">VINCITORE</span>
+                                <span class="font-bold text-aoYellow text-lg">50 pt</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h3 class="font-bold text-lg text-aoGreen mb-3">Bonus Set Perfetto</h3>
+                        <div class="bg-green-50 border border-green-200 p-4 rounded-xl text-sm text-green-800">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-star mt-1 text-green-600"></i>
+                                <p>Se indovini sia il <strong>Vincitore</strong> che il <strong>Numero Esatto di Set</strong> (3/4/5 per uomini, 2/3 per donne), ricevi un bonus extra.</p>
+                            </div>
+                            <div class="mt-3 text-right font-bold text-xl">+10 Punti</div>
+                        </div>
+                        
+                        <h3 class="font-bold text-lg text-gray-700 mt-6 mb-3">Modalità di Gioco</h3>
+                        <p class="text-sm text-gray-600 leading-relaxed">
+                            Il gioco funziona completamente offline. Una volta compilato il tabellone, verrà generato un codice criptato. Invia questo codice all'amministratore per essere inserito nella classifica ufficiale.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ADMIN PANEL (Hidden) -->
+        <div id="adminPanel" class="hidden fixed inset-0 bg-black/90 z-[60] overflow-y-auto backdrop-blur-sm">
+            <div class="max-w-4xl mx-auto mt-20 bg-white rounded-xl shadow-2xl overflow-hidden">
+                <div class="bg-gray-800 p-4 flex justify-between items-center text-white">
+                    <h2 class="text-xl font-bold"><i class="fas fa-user-shield mr-2"></i>Admin Panel</h2>
+                    <button onclick="toggleAdmin()" class="hover:text-red-400 transition"><i class="fas fa-times fa-lg"></i></button>
+                </div>
+
+                <div class="p-6">
+                    <!-- Admin Tabs -->
+                    <div class="flex gap-2 mb-6 border-b border-gray-200">
+                        <button onclick="switchAdminTab('ranking')" class="flex-1 py-3 font-bold text-sm text-aoBlue border-b-2 border-aoBlue hover:bg-blue-50 transition">Classifica Generale</button>
+                        <button onclick="switchAdminTab('results')" class="flex-1 py-3 font-bold text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition">Inserimento Risultati</button>
+                        <button onclick="switchAdminTab('players')" class="flex-1 py-3 font-bold text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-50 transition">Gestione Giocatori</button>
+                    </div>
+
+                    <!-- Sub-Tab: Ranking (Now here) -->
+                    <div id="admin-ranking" class="animate-fade-in">
+                        <div class="bg-white rounded-xl shadow-card overflow-hidden">
+                            <div class="bg-aoDarkBlue p-4 text-white text-center">
+                                <h2 class="text-lg font-bold">Classifica Ufficiale Partecipanti</h2>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left">
+                                    <thead>
+                                        <tr class="bg-gray-50 text-gray-500 uppercase text-xs font-semibold tracking-wider">
+                                            <th class="p-4 border-b">Rank</th>
+                                            <th class="p-4 border-b">Giocatore</th>
+                                            <th class="p-4 border-b text-right">Punti</th>
+                                            <th class="p-4 border-b text-center">Scheda</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="rankingTableBody" class="divide-y divide-gray-100">
+                                        <!-- Populated by JS -->
+                                        <tr>
+                                            <td colspan="4" class="p-8 text-center text-gray-400 italic">Nessun partecipante ancora registrato.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sub-Tab: Results -->
+                    <div id="admin-results" class="hidden animate-fade-in">
+                        <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-200 mb-6 flex gap-3">
+                            <i class="fas fa-info-circle text-yellow-600 mt-1"></i>
+                            <div class="text-sm text-yellow-800">
+                                <strong>Modalità Ufficiale:</strong> Simula il torneo inserendo i risultati reali man mano che avvengono. Salva alla fine per aggiornare il database dei punteggi corretti.
+                            </div>
+                        </div>
+                        <button onclick="startAdminOfficialEntry()" class="w-full bg-aoDarkBlue hover:bg-gray-900 text-white py-4 rounded-xl font-bold shadow-lg transition flex items-center justify-center gap-3">
+                            <i class="fas fa-edit"></i> Apri Editor Risultati Ufficiali
+                        </button>
+                    </div>
+
+                    <!-- Sub-Tab: Players -->
+                    <div id="admin-players" class="hidden animate-fade-in">
+                        <div class="mb-6 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Importa Codice Giocatore</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="importCodeInput" class="flex-1 border border-gray-300 p-2 rounded-lg text-xs font-mono focus:ring-2 focus:ring-green-500 focus:outline-none" placeholder="Incolla qui la stringa Base64...">
+                                <button onclick="importPlayerCode()" class="bg-green-600 hover:bg-green-700 text-white px-6 rounded-lg font-bold text-sm transition shadow-sm">
+                                    <i class="fas fa-plus"></i> AGGIUNGI
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2"><i class="fas fa-users text-aoBlue"></i> Partecipanti ({participants.length})</h3>
+                        <div class="max-h-64 overflow-y-auto border rounded-lg">
+                            <ul id="adminPlayerList" class="divide-y divide-gray-100">
+                                <!-- Populated by JS -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 py-8 text-center text-xs text-gray-400 mt-auto relative">
+        <p class="mb-1">&copy; 2026 AO Contest App. Unofficial fan game.</p>
+        <p>Created for tennis lovers.</p>
+        <button onclick="promptAdminPassword()" class="mt-4 text-gray-300 hover:text-aoBlue transition p-2">
+            <i class="fas fa-lock"></i> Admin Access
+        </button>
+    </footer>
+
+    <!-- Modal for Set Selection -->
+    <div id="setSelectionModal" class="hidden fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm transform scale-95 transition-transform duration-300">
+            <div class="text-center">
+                <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 text-aoBlue">
+                    <i class="fas fa-trophy text-xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-1">Il Vincitore è...</h3>
+                <h4 id="modalPlayerName" class="text-lg font-bold text-aoDarkBlue mb-6">Nome Giocatore</h4>
+                
+                <p class="text-sm text-gray-500 mb-4">In quanti set vincerà?</p>
+                
+                <div id="setOptionsContainer" class="grid grid-cols-3 gap-3 mb-6">
+                    <!-- Buttons injected by JS -->
+                </div>
+            </div>
+            <button onclick="closeModal()" class="w-full py-3 text-gray-400 text-sm font-medium hover:text-gray-600 transition">Annulla</button>
+        </div>
+    </div>
+
+    <!-- Modal for Player Details -->
+    <div id="playerDetailsModal" class="hidden fixed inset-0 bg-black/80 z-[70] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg h-[80vh] flex flex-col overflow-hidden">
+            <div class="bg-aoDarkBlue p-4 flex justify-between items-center text-white shrink-0">
+                <h3 class="text-lg font-bold" id="detailModalTitle">Dettagli</h3>
+                <button onclick="document.getElementById('playerDetailsModal').classList.add('hidden')" class="hover:text-red-300"><i class="fas fa-times fa-lg"></i></button>
+            </div>
+            <div class="overflow-y-auto flex-1 bg-gray-50 p-6" id="detailModalContent">
+                <!-- Content -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA & STATE ---
+        const ROUNDS_M = ['R128', 'R64', 'R32', 'R16', 'QF', 'SF', 'F', 'WINNER'];
+        const ROUNDS_W = ['R128', 'R64', 'R32', 'R16', 'QF', 'SF', 'F', 'WINNER'];
+        const POINTS = { 'R128': 10, 'R64': 15, 'R32': 20, 'R16': 25, 'QF': 30, 'SF': 35, 'F': 40, 'WINNER': 50 };
+        const SET_BONUS = 10;
+
+        // IOC to ISO-2 Map for Flag Icons
+        const countryMap = {
+            'ESP': 'es', 'AUS': 'au', 'GER': 'de', 'USA': 'us', 'FRA': 'fr', 'ARG': 'ar', 
+            'NOR': 'no', 'AUT': 'at', 'KAZ': 'kz', 'HUN': 'hu', 'SRB': 'rs', 'GBR': 'gb', 
+            'ITA': 'it', 'CAN': 'ca', 'CHN': 'cn', 'BIH': 'ba', 'POR': 'pt', 'NED': 'nl', 
+            'CHI': 'cl', 'POL': 'pl', 'SWE': 'se', 'BUL': 'bg', 'CZE': 'cz', 'JPN': 'jp', 
+            'SUI': 'ch', 'BEL': 'be', 'MON': 'mc', 'CRO': 'hr', 'SVK': 'sk', 'LAT': 'lv', 
+            'UKR': 'ua', 'ROU': 'ro', 'COL': 'co', 'DEN': 'dk', 'TUR': 'tr', 'BRA': 'br', 
+            'MEX': 'mx', 'PHI': 'ph', 'SLO': 'si', 'THA': 'th', 'INA': 'id', 'NZL': 'nz',
+            'GRE': 'gr', 'UZB': 'uz', 'RUS': 'ru', 'BLR': 'by'
+        };
+
+        function getFlagClass(ioc) {
+            if (!ioc || !countryMap[ioc]) return 'fas fa-globe text-gray-300';
+            return `flag-icon flag-icon-${countryMap[ioc]}`;
+        }
+        
+        function getFlagHtml(ioc) {
+            const cls = getFlagClass(ioc);
+            if(cls.includes('fa-globe')) return `<i class="${cls}"></i>`;
+            return `<span class="${cls}"></span>`;
+        }
+
+        // FULL DATASET
+        // Updated Russian/Belarusian players from NEUT to RUS/BLR as requested
+        
+        const initialDrawMen = [
+            {n: "Carlos Alcaraz", c: "ESP", s: 1}, {n: "Adam Walton", c: "AUS"}, 
+            {n: "Yannick Hanfmann", c: "GER"}, {n: "Zachary Svajda", c: "USA"},
+            {n: "Michael Zheng", c: "USA"}, {n: "Sebastian Korda", c: "USA"}, 
+            {n: "Tristan Schoolkate", c: "AUS"}, {n: "Corentin Moutet", c: "FRA", s: 32},
+            {n: "Tommy Paul", c: "USA", s: 19}, {n: "Aleksandar Kovacevic", c: "USA"}, 
+            {n: "Thiago A. Tirante", c: "ARG"}, {n: "Aleksandar Vukic", c: "AUS"},
+            {n: "Nicolai Budkov Kjaer", c: "NOR"}, {n: "Reilly Opelka", c: "USA"}, 
+            {n: "Filip Misolic", c: "AUT"}, {n: "A. Davidovich Fokina", c: "ESP", s: 14},
+            {n: "Alexander Bublik", c: "KAZ", s: 10}, {n: "Jenson Brooksby", c: "USA"}, 
+            {n: "Camilo Ugo Carabelli", c: "ARG"}, {n: "Marton Fucsovics", c: "HUN"},
+            {n: "Miomir Kecmanovic", c: "SRB"}, {n: "Tomas Martin Etcheverry", c: "ARG"}, 
+            {n: "Arthur Fery", c: "GBR"}, {n: "Flavio Cobolli", c: "ITA", s: 20},
+            {n: "Frances Tiafoe", c: "USA", s: 29}, {n: "Jason Kubler", c: "AUS"}, 
+            {n: "Patrick Kypson", c: "USA"}, {n: "Francisco Comesana", c: "ARG"},
+            {n: "Mariano Navone", c: "ARG"}, {n: "Hamad Medjedovic", c: "SRB"}, 
+            {n: "Matteo Berrettini", c: "ITA"}, {n: "Alex De Minaur", c: "AUS", s: 6},
+            {n: "Alexander Zverev", c: "GER", s: 3}, {n: "Gabriel Diallo", c: "CAN"}, 
+            {n: "Alexei Popyrin", c: "AUS"}, {n: "Alexandre Muller", c: "FRA"},
+            {n: "Emilio Nava", c: "USA"}, {n: "Kyrian Jacquet", c: "FRA"}, 
+            {n: "Benjamin Bonzi", c: "FRA"}, {n: "Cameron Norrie", c: "GBR", s: 26},
+            {n: "Francisco Cerundolo", c: "ARG", s: 18}, {n: "Zhizhen Zhang", c: "CHN"}, 
+            {n: "Liam Draxl", c: "CAN"}, {n: "Damir Dzumhur", c: "BIH"},
+            {n: "Arthur Cazaux", c: "FRA"}, {n: "Jaime Faria", c: "POR"}, 
+            {n: "Matteo Arnaldi", c: "ITA"}, {n: "Andrey Rublev", c: "RUS", s: 13},
+            {n: "Daniil Medvedev", c: "RUS", s: 11}, {n: "Jesper De Jong", c: "NED"}, 
+            {n: "Quentin Halys", c: "FRA"}, {n: "Alejandro Tabilo", c: "CHI"},
+            {n: "Kamil Majchrzak", c: "POL"}, {n: "Jacob Fearnley", c: "GBR"}, 
+            {n: "Fabian Marozsan", c: "HUN"}, {n: "Arthur Rinderknech", c: "FRA", s: 24},
+            {n: "Learner Tien", c: "USA", s: 25}, {n: "Marcos Giron", c: "USA"}, 
+            {n: "Elias Ymer", c: "SWE"}, {n: "Alexander Shevchenko", c: "KAZ"},
+            {n: "Juan Manuel Cerundolo", c: "ARG"}, {n: "Jordan Thompson", c: "AUS"}, 
+            {n: "Nuno Borges", c: "POR"}, {n: "Felix Auger-Aliassime", c: "CAN", s: 7},
+            {n: "Lorenzo Musetti", c: "ITA", s: 5}, {n: "Raphael Collignon", c: "BEL"}, 
+            {n: "Lorenzo Sonego", c: "ITA"}, {n: "Carlos Taberner", c: "ESP"},
+            {n: "Grigor Dimitrov", c: "BUL"}, {n: "Tomas Machac", c: "CZE"}, 
+            {n: "Shintaro Mochizuki", c: "JPN"}, {n: "Stefanos Tsitsipas", c: "GRE", s: 31},
+            {n: "Jiri Lehecka", c: "CZE", s: 17}, {n: "Arthur Gea", c: "FRA"}, 
+            {n: "Laslo Djere", c: "SRB"}, {n: "Stan Wawrinka", c: "SUI"},
+            {n: "Vit Kopriva", c: "CZE"}, {n: "Jan-Lennard Struff", c: "GER"}, 
+            {n: "Valentin Royer", c: "FRA"}, {n: "Taylor Fritz", c: "USA", s: 9},
+            {n: "Jakub Mensik", c: "CZE", s: 16}, {n: "Pablo Carreno Busta", c: "ESP"}, 
+            {n: "Rei Sakamoto", c: "JPN"}, {n: "Rafael Jodar", c: "ESP"},
+            {n: "Hubert Hurkacz", c: "POL"}, {n: "Zizou Bergs", c: "BEL"}, 
+            {n: "Ethan Quinn", c: "USA"}, {n: "Tallon Griekspoor", c: "NED", s: 23},
+            {n: "Brandon Nakashima", c: "USA", s: 27}, {n: "Botic Van de Zandschulp", c: "NED"}, 
+            {n: "Juncheng Shang", c: "CHN"}, {n: "Roberto Bautista Agut", c: "ESP"},
+            {n: "Terence Atmane", c: "FRA"}, {n: "Francesco Maestrelli", c: "ITA"}, 
+            {n: "Pedro Martinez", c: "ESP"}, {n: "Novak Djokovic", c: "SRB", s: 4},
+            {n: "Ben Shelton", c: "USA", s: 8}, {n: "Ugo Humbert", c: "FRA"}, 
+            {n: "Dane Sweeny", c: "AUS"}, {n: "Gael Monfils", c: "FRA"},
+            {n: "Adrian Mannarino", c: "FRA"}, {n: "Rinky Hijikata", c: "AUS"}, 
+            {n: "Martin Damm", c: "USA"}, {n: "Valentin Vacherot", c: "MON", s: 30},
+            {n: "Denis Shapovalov", c: "CAN", s: 21}, {n: "Bu Yunchaokete", c: "CHN"}, 
+            {n: "Daniel Altmaier", c: "GER"}, {n: "Marin Cilic", c: "CRO"},
+            {n: "Jaume Munar", c: "ESP"}, {n: "Dalibor Svrcina", c: "CZE"}, 
+            {n: "Mattia Bellucci", c: "ITA"}, {n: "Casper Ruud", c: "NOR", s: 12},
+            {n: "Karen Khachanov", c: "RUS", s: 15}, {n: "Alex Michelsen", c: "USA"}, 
+            {n: "Christopher O'Connell", c: "AUS"}, {n: "Nishesh Basavareddy", c: "USA"},
+            {n: "G. Mpetshi Perricard", c: "FRA"}, {n: "Sebastian Baez", c: "ARG"}, 
+            {n: "Cristian Garin", c: "CHI"}, {n: "Luciano Darderi", c: "ITA", s: 22},
+            {n: "Joao Fonseca", c: "BRA", s: 28}, {n: "Eliot Spizzirri", c: "USA"}, 
+            {n: "Luca Nardi", c: "ITA"}, {n: "Wu Yibing", c: "CHN"},
+            {n: "James Duckworth", c: "AUS"}, {n: "Dino Prizmic", c: "CRO"}, 
+            {n: "Hugo Gaston", c: "FRA"}, {n: "Jannik Sinner", c: "ITA", s: 2}
+        ];
+
+        // Convert array to pairs
+        const pairsMen = [];
+        for(let i=0; i<initialDrawMen.length; i+=2) {
+            pairsMen.push([initialDrawMen[i], initialDrawMen[i+1]]);
+        }
+
+        const initialDrawWomen = [
+            {n: "Aryna Sabalenka", c: "BLR", s: 1}, {n: "T. Rakotomanga", c: "FRA"}, 
+            {n: "A. Pavlyuchenkova", c: "RUS"}, {n: "Bai Zhuoxuan", c: "CHN"},
+            {n: "Suzan Lamens", c: "NED"}, {n: "Anastasia Potapova", c: "RUS"}, 
+            {n: "Mananchaya Sawangkaew", c: "THA"}, {n: "Emma Raducanu", c: "GBR", s: 28},
+            {n: "Victoria Mboko", c: "CAN", s: 17}, {n: "Emerson Jones", c: "AUS"}, 
+            {n: "Caty McNally", c: "USA"}, {n: "Himeno Sakatsume", c: "JPN"},
+            {n: "Polina Kudermetova", c: "UZB"}, {n: "Guiomar Maristany", c: "ESP"}, 
+            {n: "Dalma Galfi", c: "HUN"}, {n: "Clara Tauson", c: "DEN", s: 14},
+            {n: "Ekaterina Alexandrova", c: "RUS", s: 11}, {n: "Zeynep Sonmez", c: "TUR"}, 
+            {n: "Anna Bondar", c: "HUN"}, {n: "Elizabeth Mandlik", c: "USA"},
+            {n: "Yulia Putintseva", c: "KAZ"}, {n: "Beatriz Haddad Maia", c: "BRA"}, 
+            {n: "Elsa Jacquemot", c: "FRA"}, {n: "Marta Kostyuk", c: "UKR", s: 20},
+            {n: "Iva Jovic", c: "USA", s: 29}, {n: "Katie Volynets", c: "USA"}, 
+            {n: "Priscilla Hon", c: "AUS"}, {n: "Marina Stakusic", c: "CAN"},
+            {n: "Veronika Erjavec", c: "SLO"}, {n: "Magdalena Frech", c: "POL"}, 
+            {n: "Aliaksandra Sasnovich", c: "BLR"}, {n: "Jasmine Paolini", c: "ITA", s: 7},
+            {n: "Coco Gauff", c: "USA", s: 3}, {n: "Kamilla Rakhimova", c: "RUS"}, 
+            {n: "Olga Danilovic", c: "SRB"}, {n: "Venus Williams", c: "USA"},
+            {n: "Storm Hunter", c: "AUS"}, {n: "Jessica Bouzas Maneiro", c: "ESP"}, 
+            {n: "Hailey Baptiste", c: "USA"}, {n: "Marketa Vondrousova", c: "CZE", s: 32},
+            {n: "Karolina Muchova", c: "CZE", s: 19}, {n: "Jaqueline Cristian", c: "ROU"}, 
+            {n: "Alycia Parks", c: "USA"}, {n: "Alexandra Eala", c: "PHI"},
+            {n: "Ann Li", c: "USA"}, {n: "Camila Osorio", c: "COL"}, 
+            {n: "Magda Linette", c: "POL"}, {n: "Emma Navarro", c: "USA", s: 15},
+            {n: "Elina Svitolina", c: "UKR", s: 12}, {n: "Cristina Bucsa", c: "ESP"}, 
+            {n: "Linda Klimovicova", c: "POL"}, {n: "Francesca Jones", c: "GBR"},
+            {n: "Talia Gibson", c: "AUS"}, {n: "Anna Blinkova", c: "RUS"}, 
+            {n: "Barbora Krejcikova", c: "CZE"}, {n: "Diana Shnaider", c: "RUS", s: 23},
+            {n: "Dayana Yastremska", c: "UKR", s: 26}, {n: "Elena-Gabriela Ruse", c: "ROU"}, 
+            {n: "Yuliia Starodubtseva", c: "UKR"}, {n: "Ajla Tomljanovic", c: "AUS"},
+            {n: "Maria Sakkari", c: "GRE"}, {n: "Leolia Jeanjean", c: "FRA"}, 
+            {n: "Donna Vekic", c: "CRO"}, {n: "Mirra Andreeva", c: "RUS", s: 8},
+            {n: "Jessica Pegula", c: "USA", s: 6}, {n: "Anastasia Zakharova", c: "RUS"}, 
+            {n: "Emiliana Arango", c: "COL"}, {n: "McCartney Kessler", c: "USA"},
+            {n: "Oksana Selekhmeteva", c: "RUS"}, {n: "Ella Seidel", c: "GER"}, 
+            {n: "Zarina Diyas", c: "KAZ"}, {n: "Paula Badosa", c: "ESP", s: 25},
+            {n: "Leylah Fernandez", c: "CAN", s: 22}, {n: "Janice Tjen", c: "INA"}, 
+            {n: "Karolina Pliskova", c: "CZE"}, {n: "Sloane Stephens", c: "USA"},
+            {n: "Ashlyn Krueger", c: "USA"}, {n: "Sara Bejlek", c: "CZE"}, 
+            {n: "Oleksandra Oliynykova", c: "UKR"}, {n: "Madison Keys", c: "USA", s: 9},
+            {n: "Linda Noskova", c: "CZE", s: 13}, {n: "Darja Semenistaja", c: "LAT"}, 
+            {n: "Zhang Shuai", c: "CHN"}, {n: "Taylah Preston", c: "AUS"},
+            {n: "Wang Xinyu", c: "CHN"}, {n: "Anhelina Kalinina", c: "UKR"}, 
+            {n: "Rebecca SRAMKOVA", c: "SVK"}, {n: "Jelena Ostapenko", c: "LAT", s: 24},
+            {n: "Sofia Kenin", c: "USA", s: 27}, {n: "Peyton Stearns", c: "USA"}, 
+            {n: "Petra Marcinko", c: "CRO"}, {n: "Tatjana Maria", c: "GER"},
+            {n: "Panna Udvardy", c: "HUN"}, {n: "Katerina Siniakova", c: "CZE"}, 
+            {n: "Simona Waltert", c: "SUI"}, {n: "Elena Rybakina", c: "KAZ", s: 5},
+            {n: "Amanda Anisimova", c: "USA", s: 4}, {n: "Kaja Juvan", c: "SLO"}, 
+            {n: "Varvara Gracheva", c: "FRA"}, {n: "Viktorija Golubic", c: "SUI"},
+            {n: "Lulu Sun", c: "NZL"}, {n: "Linda Fruhvirtova", c: "CZE"}, 
+            {n: "Tereza Valentova", c: "CZE"}, {n: "Maya Joint", c: "AUS", s: 30},
+            {n: "Elise Mertens", c: "BEL", s: 21}, {n: "Lanlana Tararudee", c: "THA"}, 
+            {n: "Solana Sierra", c: "ARG"}, {n: "Moyuka Uchijima", c: "JPN"},
+            {n: "Daria Kasatkina", c: "RUS"}, {n: "Nikola Bartunkova", c: "CZE"}, 
+            {n: "Katie Boulter", c: "GBR"}, {n: "Belinda Bencic", c: "SUI", s: 10},
+            {n: "Naomi Osaka", c: "JPN", s: 16}, {n: "Antonia Ruzic", c: "CRO"}, 
+            {n: "Sorana Cirstea", c: "ROU"}, {n: "Eva Lys", c: "GER"},
+            {n: "Maddison Inglis", c: "AUS"}, {n: "Kimberly Birrell", c: "AUS"}, 
+            {n: "Laura Siegemund", c: "GER"}, {n: "Liudmila Samsonova", c: "RUS", s: 18},
+            {n: "Anna Kalinskaya", c: "RUS", s: 31}, {n: "Sonay Kartal", c: "GBR"}, 
+            {n: "Julia Grabher", c: "AUT"}, {n: "Elisabetta Cocciaretto", c: "ITA"},
+            {n: "Renata Zarazua", c: "MEX"}, {n: "Marie Bouzkova", c: "CZE"}, 
+            {n: "Yuan Yue", c: "CHN"}, {n: "Iga Swiatek", c: "POL", s: 2}
+        ];
+
+        // Convert array to pairs
+        const pairsWomen = [];
+        for(let i=0; i<initialDrawWomen.length; i+=2) {
+            pairsWomen.push([initialDrawWomen[i], initialDrawWomen[i+1]]);
+        }
+
+        // --- GLOBAL STATE ---
+        let currentUser = null;
+        let currentCategory = 'M'; 
+        let currentRoundIndex = 0;
+        let userPicks = { M: {}, W: {} };
+        let officialResults = JSON.parse(localStorage.getItem('ao26_official')) || null;
+        let participants = JSON.parse(localStorage.getItem('ao26_participants')) || [];
+        let currentBracket = [];
+        let isAdminMode = false;
+
+        // --- INIT ---
+        function init() {
+            // Animation for modal appearance
+            const modal = document.getElementById('setSelectionModal');
+            modal.addEventListener('transitionend', (e) => {
+                if(modal.classList.contains('opacity-0') && !modal.classList.contains('hidden')) {
+                   modal.classList.add('hidden');
+                }
+            });
+            loadRanking();
+        }
+
+        // --- NAVIGATION ---
+        function switchTab(tab) {
+            document.getElementById('tab-play').classList.add('hidden');
+            // Ranking tab is now removed from public view
+            document.getElementById('tab-rules').classList.add('hidden');
+            
+            // Reset styles
+            ['play', 'rules'].forEach(t => {
+                const btn = document.getElementById(`btn-${t}`);
+                if(btn) btn.className = "flex-1 py-3 rounded-lg text-sm font-bold text-gray-500 hover:bg-gray-50 transition-all duration-200";
+            });
+
+            document.getElementById(`tab-${tab}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`btn-${tab}`);
+            if(activeBtn) activeBtn.className = "flex-1 py-3 rounded-lg text-sm font-bold bg-aoBlue text-white shadow-sm transition-all duration-200 transform scale-105";
+            
+            // Re-render round if in play tab
+            if(tab === 'play' && currentUser) {
+                renderRound();
+            }
+        }
+
+        // --- GAME LOGIC ---
+
+        function registerPlayer() {
+            const name = document.getElementById('playerNameInput').value.trim();
+            if (!name) return alert("Inserisci un nome!");
+            
+            currentUser = name;
+            document.getElementById('currentUserDisplay').innerText = name;
+            document.getElementById('registrationPanel').classList.add('hidden');
+            document.getElementById('gameInterface').classList.remove('hidden');
+            
+            userPicks = { M: {}, W: {} };
+            startTournament('M');
+        }
+
+        function setCategory(cat) {
+            currentCategory = cat;
+            currentRoundIndex = 0;
+            
+            // Visual Update
+            const btnM = document.getElementById('btn-cat-M');
+            const btnW = document.getElementById('btn-cat-W');
+            
+            if(cat === 'M') {
+                btnM.className = "group relative px-8 py-3 rounded-full font-bold bg-aoBlue text-white shadow-lg transform scale-105 transition-all";
+                btnW.className = "group relative px-8 py-3 rounded-full font-bold bg-white text-gray-500 shadow border border-gray-200 hover:border-aoBlue hover:text-aoBlue transition-all";
+            } else {
+                btnM.className = "group relative px-8 py-3 rounded-full font-bold bg-white text-gray-500 shadow border border-gray-200 hover:border-aoBlue hover:text-aoBlue transition-all";
+                btnW.className = "group relative px-8 py-3 rounded-full font-bold bg-aoBlue text-white shadow-lg transform scale-105 transition-all";
+            }
+
+            renderRound();
+        }
+
+        function startTournament(cat) {
+            setCategory(cat);
+        }
+
+        function getRoundName(index) {
+            return (currentCategory === 'M' ? ROUNDS_M : ROUNDS_W)[index];
+        }
+
+        function renderRound() {
+            const container = document.getElementById('matchesContainer');
+            container.innerHTML = '';
+            
+            const roundName = getRoundName(currentRoundIndex);
+            const rounds = currentCategory === 'M' ? ROUNDS_M : ROUNDS_W;
+            
+            // Indicators
+            document.getElementById('roundIndicator').innerHTML = rounds.map((r, i) => 
+                `<span class="${i === currentRoundIndex ? 'text-aoBlue bg-blue-100 px-3 py-1 rounded-full shadow-sm' : 'text-gray-300'} transition-all">${r}</span>`
+            ).join('');
+            
+            const progress = Math.round((currentRoundIndex / (rounds.length - 1)) * 100);
+            document.getElementById('progressBar').style.width = `${progress}%`;
+            document.getElementById('progressText').innerText = `${progress}%`;
+
+            let matches = [];
+
+            if (currentRoundIndex === 0) {
+                // R128 - Use Objects
+                const source = currentCategory === 'M' ? pairsMen : pairsWomen;
+                const existingPicks = userPicks[currentCategory][roundName];
+                
+                matches = source.map((pair, idx) => ({
+                    id: `${currentCategory}_${roundName}_${idx}`,
+                    p1: pair[0],
+                    p2: pair[1],
+                    winner: existingPicks ? existingPicks[idx].winner : null,
+                    sets: existingPicks ? existingPicks[idx].sets : null
+                }));
+            } else {
+                const prevRoundName = getRoundName(currentRoundIndex - 1);
+                const prevPicks = userPicks[currentCategory][prevRoundName];
+                
+                if (!prevPicks) {
+                    container.innerHTML = '<div class="col-span-2 text-center p-10 text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-300">Completa il turno precedente per sbloccare questo livello.</div>';
+                    return;
+                }
+
+                const existingPicks = userPicks[currentCategory][roundName];
+                
+                for (let i = 0; i < prevPicks.length; i += 2) {
+                    matches.push({
+                        id: `${currentCategory}_${roundName}_${i/2}`,
+                        p1: prevPicks[i].winner, // Object {n, c, s}
+                        p2: prevPicks[i+1] ? prevPicks[i+1].winner : {n: 'BYE', c: ''},
+                        winner: existingPicks ? existingPicks[i/2].winner : null,
+                        sets: existingPicks ? existingPicks[i/2].sets : null
+                    });
+                }
+            }
+            
+            currentBracket = matches;
+            
+            // Render Cards
+            matches.forEach((match, idx) => {
+                // Checks based on Name string equality
+                const isP1Selected = match.winner && match.winner.n === match.p1.n;
+                const isP2Selected = match.winner && match.winner.n === match.p2.n;
+                
+                const getSetBadge = (s) => s ? `<div class="absolute -top-2 -right-2 bg-aoYellow text-aoDarkBlue text-[10px] font-bold w-6 h-6 flex items-center justify-center rounded-full shadow-md border-2 border-white">${s}</div>` : '';
+
+                const renderPlayer = (p, isSelected, onClickStr) => `
+                    <div onclick="${onClickStr}" class="player-box cursor-pointer relative p-3 rounded-lg flex items-center gap-3 ${isSelected ? 'selected' : 'bg-gray-50'}">
+                        ${getFlagHtml(p.c)}
+                        <div class="flex-1 min-w-0">
+                            <div class="text-xs text-gray-400 flex justify-between">
+                                <span>${p.c || ''}</span>
+                                ${p.s ? `<span class="text-aoBlue font-bold">#${p.s}</span>` : ''}
+                            </div>
+                            <div class="player-name text-sm font-medium truncate text-gray-700 leading-tight" title="${p.n}">${p.n}</div>
+                        </div>
+                        ${isSelected ? getSetBadge(match.sets) : ''}
+                        ${isSelected ? '<i class="fas fa-check-circle text-aoBlue absolute bottom-3 right-3 text-opacity-20 text-xl"></i>' : ''}
+                    </div>
+                `;
+
+                const card = document.createElement('div');
+                card.className = "match-card bg-white rounded-xl shadow-card hover:shadow-card-hover p-2 border border-gray-100";
+                
+                // Pass indices safely
+                card.innerHTML = `
+                    <div class="flex flex-col gap-1">
+                        ${renderPlayer(match.p1, isP1Selected, `openSetModal(${idx}, 'p1')`)}
+                        <div class="h-px bg-gray-100 w-full my-0.5 relative">
+                             <span class="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-2 text-[10px] text-gray-300 font-bold">VS</span>
+                        </div>
+                        ${renderPlayer(match.p2, isP2Selected, `openSetModal(${idx}, 'p2')`)}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            // Button visibility
+            document.getElementById('prevRoundBtn').classList.toggle('hidden', currentRoundIndex === 0);
+            
+            if (currentRoundIndex === rounds.length - 2) { // Final Round
+                document.getElementById('nextRoundBtn').classList.add('hidden');
+                document.getElementById('finishBtn').classList.remove('hidden');
+            } else {
+                 document.getElementById('nextRoundBtn').classList.remove('hidden');
+                 document.getElementById('finishBtn').classList.add('hidden');
+            }
+        }
+
+        // --- SELECTION LOGIC ---
+        let pendingMatchIdx = -1;
+        let pendingWinnerObj = null;
+
+        function openSetModal(matchIdx, playerKey) {
+            const match = currentBracket[matchIdx];
+            const player = match[playerKey];
+            
+            pendingMatchIdx = matchIdx;
+            pendingWinnerObj = player;
+            
+            const modal = document.getElementById('setSelectionModal');
+            document.getElementById('modalPlayerName').innerText = player.n;
+            
+            const setsContainer = document.getElementById('setOptionsContainer');
+            setsContainer.innerHTML = '';
+            
+            const options = currentCategory === 'M' ? [3, 4, 5] : [2, 3];
+            
+            options.forEach(s => {
+                const btn = document.createElement('button');
+                btn.className = "bg-gray-50 hover:bg-aoYellow hover:text-aoDarkBlue border-2 border-gray-200 hover:border-aoYellow rounded-xl py-4 font-bold text-lg transition-all transform hover:scale-105 shadow-sm";
+                btn.innerText = s;
+                btn.onclick = () => confirmPick(s);
+                setsContainer.appendChild(btn);
+            });
+            
+            modal.classList.remove('hidden');
+            // Small delay to allow display:block to apply before opacity transition
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('div').classList.remove('scale-95');
+                modal.querySelector('div').classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('setSelectionModal');
+            modal.classList.add('opacity-0');
+            modal.querySelector('div').classList.remove('scale-100');
+            modal.querySelector('div').classList.add('scale-95');
+            
+            // Wait for transition
+            setTimeout(() => {
+                 modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function confirmPick(sets) {
+            // Update Data
+            currentBracket[pendingMatchIdx].winner = pendingWinnerObj;
+            currentBracket[pendingMatchIdx].sets = sets;
+            
+            const roundName = getRoundName(currentRoundIndex);
+            if (!userPicks[currentCategory][roundName]) {
+                userPicks[currentCategory][roundName] = [];
+            }
+            userPicks[currentCategory][roundName] = currentBracket;
+
+            closeModal();
+            renderRound(); 
+        }
+
+        function changeRound(delta) {
+            currentRoundIndex += delta;
+            renderRound();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function nextRound() {
+            const unselected = currentBracket.find(m => !m.winner);
+            if (unselected) {
+                alert("Seleziona un vincitore per tutti i match prima di procedere!");
+                return;
+            }
+            // Save state firmly
+            const roundName = getRoundName(currentRoundIndex);
+            userPicks[currentCategory][roundName] = JSON.parse(JSON.stringify(currentBracket));
+
+            changeRound(1);
+        }
+
+        function finishPrediction() {
+            const unselected = currentBracket.find(m => !m.winner);
+            if (unselected) {
+                alert("Chi vince la finale?");
+                return;
+            }
+            
+            const roundName = getRoundName(currentRoundIndex);
+            userPicks[currentCategory][roundName] = JSON.parse(JSON.stringify(currentBracket));
+
+            if (currentCategory === 'M') {
+                if (Object.keys(userPicks.W).length === 0) {
+                    if(confirm("Hai completato il tabellone Maschile. Passare al Femminile?")) {
+                        setCategory('W');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                } else {
+                    showFinalScreen();
+                }
+            } else {
+                if (Object.keys(userPicks.M).length === 0) {
+                     if(confirm("Hai completato il tabellone Femminile. Passare al Maschile?")) {
+                        setCategory('M');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
+                } else {
+                    showFinalScreen();
+                }
+            }
+        }
+
+        function showFinalScreen() {
+            if (isAdminMode) {
+                officialResults = JSON.parse(JSON.stringify(userPicks));
+                localStorage.setItem('ao26_official', JSON.stringify(officialResults));
+                alert("Risultati Ufficiali Salvati!");
+                location.reload();
+                return;
+            }
+
+            document.getElementById('gameInterface').classList.add('hidden');
+            document.getElementById('exportPanel').classList.remove('hidden');
+            
+            const payload = { n: currentUser, t: Date.now(), p: userPicks };
+            // Minify payload to keep string short? Not strictly needed for copy-paste
+            const jsonStr = JSON.stringify(payload);
+            const b64 = btoa(encodeURIComponent(jsonStr)); 
+            document.getElementById('exportCodeText').value = b64;
+        }
+
+        function copyCode() {
+            const copyText = document.getElementById("exportCodeText");
+            copyText.select();
+            document.execCommand("copy");
+            alert("Codice copiato negli appunti!");
+        }
+
+        function resetGame() {
+            if(confirm("Sei sicuro? Perderai tutti i dati.")) location.reload();
+        }
+
+        // --- PDF GENERATION ---
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFillColor(0, 145, 210);
+            doc.rect(0, 0, 210, 40, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(24);
+            doc.text("AO 2026 - PREVISIONI", 14, 20);
+            doc.setFontSize(14);
+            doc.text("Partecipante: " + currentUser, 14, 32);
+
+            let yPos = 50;
+
+            const printCategory = (cat, title) => {
+                doc.setTextColor(0, 98, 155);
+                doc.setFontSize(18);
+                doc.text(title, 14, yPos);
+                yPos += 10;
+
+                const rounds = cat === 'M' ? ROUNDS_M : ROUNDS_W;
+                const picks = userPicks[cat];
+                let rows = [];
+                
+                // Show R16 onwards
+                const startIdx = 3; // R16 is index 3 in array
+                
+                for(let i=startIdx; i<rounds.length; i++) {
+                    const r = rounds[i];
+                    if (!picks[r]) continue;
+                    
+                    picks[r].forEach(m => {
+                        // Extract Name from Object
+                        const winnerName = m.winner ? m.winner.n : "-";
+                        const p1Name = m.p1 ? m.p1.n : "Bye";
+                        const p2Name = m.p2 ? m.p2.n : "Bye";
+                        rows.push([r, `${p1Name} vs ${p2Name}`, winnerName, m.sets + " sets"]);
+                    });
+                }
+
+                doc.autoTable({
+                    startY: yPos,
+                    head: [['Turno', 'Match', 'Vincitore Scelto', 'Set']],
+                    body: rows,
+                    theme: 'grid',
+                    headStyles: { fillColor: [0, 145, 210] },
+                    styles: { fontSize: 10, cellPadding: 2 }
+                });
+                
+                yPos = doc.lastAutoTable.finalY + 15;
+            };
+
+            printCategory('M', "Tabellone Maschile (Dai R16)");
+            if (yPos > 220) { doc.addPage(); yPos = 20; }
+            printCategory('W', "Tabellone Femminile (Dai R16)");
+
+            doc.save(`AO26_Contest_${currentUser}.pdf`);
+        }
+
+        // --- ADMIN & SCORING ---
+
+        function promptAdminPassword() {
+            const p = prompt("Password Admin:");
+            if (p === "admin2026") {
+                document.getElementById('adminPanel').classList.remove('hidden');
+                updateAdminPlayerList();
+                // We also need to reload ranking to populate the table which is now in admin panel
+                loadRanking();
+            }
+        }
+
+        function toggleAdmin() {
+            document.getElementById('adminPanel').classList.add('hidden');
+        }
+
+        function switchAdminTab(tab) {
+            document.getElementById('admin-results').classList.add('hidden');
+            document.getElementById('admin-players').classList.add('hidden');
+            document.getElementById('admin-ranking').classList.add('hidden');
+            
+            // Buttons visual update could be added here but simple toggle works
+            ['results', 'players', 'ranking'].forEach(t => {
+                // Reset button style logic if needed, simplied for now
+            });
+            
+            document.getElementById(`admin-${tab}`).classList.remove('hidden');
+            
+            if(tab === 'ranking') loadRanking();
+        }
+
+        function startAdminOfficialEntry() {
+            isAdminMode = true;
+            currentUser = "OFFICIAL RESULTS";
+            toggleAdmin();
+            document.getElementById('registrationPanel').classList.add('hidden');
+            document.getElementById('gameInterface').classList.remove('hidden');
+            
+            // Visual indicator
+            document.querySelector('header').classList.remove('ao-gradient');
+            document.querySelector('header').classList.add('bg-gray-800');
+            document.getElementById('currentUserDisplay').innerText = "ADMIN MODE";
+            
+            userPicks = { M: {}, W: {} };
+            startTournament('M');
+        }
+
+        function importPlayerCode() {
+            const code = document.getElementById('importCodeInput').value;
+            if (!code) return;
+
+            try {
+                const jsonStr = decodeURIComponent(atob(code));
+                const data = JSON.parse(jsonStr);
+                
+                const points = calculatePoints(data.p);
+                
+                const exists = participants.findIndex(p => p.name === data.n);
+                if(exists !== -1) participants.splice(exists, 1);
+
+                const playerEntry = {
+                    name: data.n,
+                    picks: data.p,
+                    points: points,
+                    id: Date.now()
+                };
+
+                participants.push(playerEntry);
+                localStorage.setItem('ao26_participants', JSON.stringify(participants));
+                
+                alert(`Giocatore ${data.n} aggiunto!`);
+                updateAdminPlayerList();
+                document.getElementById('importCodeInput').value = "";
+                loadRanking(); // Update ranking table
+            } catch (e) {
+                alert("Codice non valido!");
+            }
+        }
+
+        function calculatePoints(playerPicks) {
+            if (!officialResults) return 0;
+            
+            let total = 0;
+            
+            ['M', 'W'].forEach(cat => {
+                const rounds = cat === 'M' ? ROUNDS_M : ROUNDS_W;
+                rounds.forEach(r => {
+                    const playerRound = playerPicks[cat][r];
+                    const officialRound = officialResults[cat][r];
+                    
+                    if (!playerRound || !officialRound) return;
+
+                    playerRound.forEach((pm, idx) => {
+                        const om = officialRound[idx];
+                        if (!om || !om.winner) return;
+
+                        // Compare names (strings)
+                        if (pm.winner.n === om.winner.n) {
+                            total += POINTS[r];
+                            if (parseInt(pm.sets) === parseInt(om.sets)) {
+                                total += SET_BONUS;
+                            }
+                        }
+                    });
+                });
+            });
+            return total;
+        }
+
+        function updateAdminPlayerList() {
+            const list = document.getElementById('adminPlayerList');
+            list.innerHTML = '';
+            participants.sort((a,b) => b.points - a.points).forEach((p, idx) => {
+                const li = document.createElement('li');
+                li.className = "flex justify-between items-center p-3 hover:bg-gray-50 bg-white";
+                li.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="text-gray-400 font-mono text-xs w-4">${idx+1}.</span>
+                        <span class="font-bold text-gray-700">${p.name}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-white bg-aoBlue px-2 py-0.5 rounded text-xs">${p.points} pt</span>
+                        <button onclick="viewPlayerDetails(${p.id})" class="text-xs bg-gray-100 border border-gray-300 px-2 py-1 rounded hover:bg-gray-200 text-gray-600">Dettagli</button>
+                        <button onclick="deletePlayer(${p.id})" class="text-red-400 hover:text-red-600 px-2"><i class="fas fa-trash"></i></button>
+                    </div>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        function deletePlayer(id) {
+            if(confirm("Eliminare definitivamente questo giocatore?")) {
+                participants = participants.filter(p => p.id !== id);
+                localStorage.setItem('ao26_participants', JSON.stringify(participants));
+                updateAdminPlayerList();
+                loadRanking();
+            }
+        }
+
+        function loadRanking() {
+            const tbody = document.getElementById('rankingTableBody');
+            
+            // Re-calc points
+            participants.forEach(p => p.points = calculatePoints(p.picks));
+            participants.sort((a,b) => b.points - a.points);
+
+            if (participants.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-gray-400 italic">La classifica è vuota.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            participants.forEach((p, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b hover:bg-blue-50 transition bg-white";
+                
+                let rankDisplay = `<span class="font-mono text-gray-500">#${idx+1}</span>`;
+                if(idx===0) rankDisplay = `<i class="fas fa-trophy text-yellow-400 text-lg"></i>`;
+                if(idx===1) rankDisplay = `<i class="fas fa-medal text-gray-400 text-lg"></i>`;
+                if(idx===2) rankDisplay = `<i class="fas fa-medal text-orange-400 text-lg"></i>`;
+
+                tr.innerHTML = `
+                    <td class="p-4">${rankDisplay}</td>
+                    <td class="p-4 font-bold text-gray-800">${p.name}</td>
+                    <td class="p-4 text-right font-bold text-aoBlue text-lg">${p.points}</td>
+                    <td class="p-4 text-center">
+                        <button onclick="viewPlayerDetails(${p.id})" class="text-aoBlue hover:bg-blue-100 p-2 rounded-full transition"><i class="fas fa-eye"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function viewPlayerDetails(id) {
+            const p = participants.find(x => x.id === id);
+            if(!p) return;
+            
+            document.getElementById('detailModalTitle').innerText = p.name;
+            const content = document.getElementById('detailModalContent');
+            
+            let html = "";
+            ['M', 'W'].forEach(cat => {
+                const catTitle = cat === 'M' ? '<i class="fas fa-mars text-blue-500 mr-2"></i> Tabellone Maschile' : '<i class="fas fa-venus text-pink-500 mr-2"></i> Tabellone Femminile';
+                html += `<div class="mb-8"><h4 class="font-bold text-xl text-gray-800 border-b pb-2 mb-4">${catTitle}</h4>`;
+                
+                // Show R16 onwards
+                const rounds = ['R16', 'QF', 'SF', 'F', 'WINNER'];
+                rounds.forEach(r => {
+                    const picks = p.picks[cat][r];
+                    if(picks) {
+                        html += `<div class="mb-4">
+                            <div class="inline-block bg-gray-200 text-gray-600 text-xs font-bold px-2 py-1 rounded mb-2">${r}</div>
+                            <div class="grid grid-cols-1 gap-2">`;
+                        
+                        picks.forEach(m => {
+                            if(m.winner) {
+                                html += `
+                                <div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm">
+                                    <div class="flex items-center gap-2">
+                                        ${getFlagHtml(m.winner.c)}
+                                        <span class="text-sm font-medium">${m.winner.n}</span>
+                                    </div>
+                                    <span class="text-xs font-bold bg-blue-50 text-aoBlue px-2 py-0.5 rounded">${m.sets} sets</span>
+                                </div>`;
+                            }
+                        });
+                        html += `</div></div>`;
+                    }
+                });
+                html += `</div>`;
+            });
+            
+            content.innerHTML = html;
+            document.getElementById('playerDetailsModal').classList.remove('hidden');
+        }
+
+        // Start
+        init();
+
+    </script>
+</body>
+</html>
