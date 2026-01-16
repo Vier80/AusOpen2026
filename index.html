@@ -1322,10 +1322,41 @@
                 rounds.forEach(r => {
                     const picks = p.picks[cat][r];
                     if(picks) {
-                        html += `<div class="mb-4"><div class="inline-block bg-gray-200 text-gray-600 text-xs font-bold px-2 py-1 rounded mb-2">${r}</div><div class="grid grid-cols-1 gap-2">`;
-                        picks.forEach(m => {
+                        html += `<div class="mb-4"><div class="inline-block bg-gray-200 text-gray-600 text-xs font-bold px-2 py-1 rounded mb-2">${r} <span class="font-normal text-gray-400 ml-1">(${POINTS[r]} pt)</span></div><div class="grid grid-cols-1 gap-2">`;
+                        picks.forEach((m, idx) => {
                             if(m.winner) {
-                                html += `<div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm"><div class="flex items-center gap-2">${getFlagHtml(m.winner.c)}<span class="text-sm font-medium">${m.winner.n}</span></div><span class="text-xs font-bold bg-blue-50 text-aoBlue px-2 py-0.5 rounded">${m.sets} sets</span></div>`;
+                                let scoreBadge = "";
+                                
+                                // CALCOLO PUNTEGGIO SINGOLO MATCH
+                                if (officialResults && officialResults[cat] && officialResults[cat][r]) {
+                                    const om = officialResults[cat][r][idx];
+                                    if (om && om.winner) {
+                                        if (m.winner.n === om.winner.n) {
+                                            let pts = POINTS[r];
+                                            let bonusHtml = "";
+                                            if (parseInt(m.sets) === parseInt(om.sets)) {
+                                                pts += SET_BONUS;
+                                                bonusHtml = `<i class="fas fa-star text-[10px] ml-1 text-yellow-500" title="Bonus Set (+${SET_BONUS})"></i>`;
+                                            }
+                                            scoreBadge = `<div class="ml-2 px-2 py-1 rounded bg-green-100 text-green-700 text-xs font-bold border border-green-200 flex items-center shadow-sm">+${pts} pt${bonusHtml}</div>`;
+                                        } else {
+                                            scoreBadge = `<div class="ml-2 px-2 py-1 rounded bg-red-50 text-red-400 text-xs font-bold border border-red-100 flex items-center" title="Vincitore Reale: ${om.winner.n}">0 pt</div>`;
+                                        }
+                                    } else {
+                                         scoreBadge = `<div class="ml-2 px-2 py-1 rounded bg-gray-100 text-gray-400 text-[10px] border border-gray-200 italic">In corso</div>`;
+                                    }
+                                }
+
+                                html += `<div class="flex justify-between items-center bg-white p-2 border rounded shadow-sm hover:bg-gray-50 transition">
+                                            <div class="flex items-center gap-2 overflow-hidden flex-1">
+                                                ${getFlagHtml(m.winner.c)}
+                                                <span class="text-sm font-medium truncate text-gray-700" title="${m.winner.n}">${m.winner.n}</span>
+                                            </div>
+                                            <div class="flex items-center shrink-0">
+                                                <span class="text-[10px] font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded border border-gray-200 mr-1">${m.sets}s</span>
+                                                ${scoreBadge}
+                                            </div>
+                                         </div>`;
                             }
                         });
                         html += `</div></div>`;
