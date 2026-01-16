@@ -294,12 +294,12 @@
                                 <span class="font-bold text-aoDarkBlue">25 pt</span>
                             </li>
                             <li class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                <span class="text-sm font-medium">Quarti (QF)</span>
-                                <span class="font-bold text-aoDarkBlue">30 pt</span>
+                                <span class="text-sm font-medium">Semifinalista (QF Winner)</span>
+                                <span class="font-bold text-aoDarkBlue">35 pt</span>
                             </li>
                             <li class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                                <span class="text-sm font-medium">Semifinale (SF)</span>
-                                <span class="font-bold text-aoDarkBlue">40 pt</span> <!-- CORRETTO A 40 -->
+                                <span class="text-sm font-medium">Finalista (SF Winner)</span>
+                                <span class="font-bold text-aoDarkBlue">40 pt</span>
                             </li>
                             <li class="flex justify-between items-center p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                                 <span class="text-sm font-bold text-aoDarkBlue">VINCITORE</span>
@@ -393,6 +393,12 @@
                             <button onclick="adminSimulateTournament()" class="w-full bg-purple-600 hover:bg-purple-800 text-white py-4 rounded-xl font-bold shadow-lg transition flex items-center justify-center gap-3">
                                 <i class="fas fa-bolt"></i> ⚡ Simula Torneo Completo (Test Immediato)
                             </button>
+
+                            <div class="border-t border-gray-200 my-2 pt-4">
+                                <button onclick="resetOfficialResults()" class="w-full bg-red-100 hover:bg-red-200 text-red-600 py-3 rounded-lg font-bold transition flex items-center justify-center gap-2 border border-red-200">
+                                    <i class="fas fa-trash-alt"></i> Reset Risultati Ufficiali
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -467,10 +473,11 @@
         const ROUNDS_M = ['R128', 'R64', 'R32', 'R16', 'QF', 'SF', 'F', 'WINNER'];
         const ROUNDS_W = ['R128', 'R64', 'R32', 'R16', 'QF', 'SF', 'F', 'WINNER'];
         
-        // UPDATED LOGIC: 
-        // Winning SF gives 40pts (reaching Final -> Finalist)
-        // Winning F gives 50pts (Winning -> Champion)
-        const POINTS = { 'R128': 10, 'R64': 15, 'R32': 20, 'R16': 25, 'QF': 30, 'SF': 40, 'F': 50, 'WINNER': 0 };
+        // UPDATED LOGIC (as requested): 
+        // Winning QF (reaching SF) = 35pts
+        // Winning SF (reaching Final) = 40pts
+        // Winning F (Champion) = 50pts
+        const POINTS = { 'R128': 10, 'R64': 15, 'R32': 20, 'R16': 25, 'QF': 35, 'SF': 40, 'F': 50, 'WINNER': 0 };
         const SET_BONUS = 10;
 
         // IOC to ISO-2 Map for Flag Icons
@@ -784,6 +791,20 @@
             // Reload ranking to reflect new correct answers
             loadRanking();
             updateAdminPlayerList();
+        }
+
+        // NEW: Function to RESET Official Results
+        function resetOfficialResults() {
+            if(!confirm("ATTENZIONE: Stai per cancellare TUTTI i risultati ufficiali inseriti finora.\n\nQuesta operazione non può essere annullata. Confermi?")) return;
+            
+            officialResults = null;
+            localStorage.removeItem('ao26_official');
+            
+            alert("Risultati ufficiali resettati. Ora puoi reinserirli da zero.");
+            
+            // Refresh admin view
+            startAdminOfficialEntry();
+            loadRanking();
         }
 
         function performAutoFillForObject(targetPicks, fullTournament = false) {
