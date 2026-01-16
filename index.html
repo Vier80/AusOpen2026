@@ -992,6 +992,13 @@
             }
             const roundName = getRoundName(currentRoundIndex);
             userPicks[currentCategory][roundName] = JSON.parse(JSON.stringify(currentBracket));
+
+            // NEW: Autosave for Admin
+            if(isAdminMode) {
+                officialResults = JSON.parse(JSON.stringify(userPicks));
+                localStorage.setItem('ao26_official', JSON.stringify(officialResults));
+            }
+
             changeRound(1);
         }
 
@@ -1141,7 +1148,14 @@
             document.querySelector('header').classList.remove('ao-gradient');
             document.querySelector('header').classList.add('bg-gray-800');
             document.getElementById('currentUserDisplay').innerText = "ADMIN MODE";
-            userPicks = { M: {}, W: {} };
+            
+            // Load existing official results if available, otherwise start fresh
+            if (officialResults) {
+                userPicks = JSON.parse(JSON.stringify(officialResults));
+            } else {
+                userPicks = { M: {}, W: {} };
+            }
+
             startTournament('M');
         }
 
@@ -1279,7 +1293,7 @@
             ['M', 'W'].forEach(cat => {
                 const catTitle = cat === 'M' ? '<i class="fas fa-mars text-blue-500 mr-2"></i> Tabellone Maschile' : '<i class="fas fa-venus text-pink-500 mr-2"></i> Tabellone Femminile';
                 html += `<div class="mb-8"><h4 class="font-bold text-xl text-gray-800 border-b pb-2 mb-4">${catTitle}</h4>`;
-                const rounds = ['R16', 'QF', 'SF', 'F', 'WINNER'];
+                const rounds = ['R128', 'R64', 'R32', 'R16', 'QF', 'SF', 'F', 'WINNER'];
                 rounds.forEach(r => {
                     const picks = p.picks[cat][r];
                     if(picks) {
